@@ -53,7 +53,7 @@ class Certificate
     {
         $exTaggedObjects = $this->getTBSCertificate()->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
         $extensions      = array_filter($exTaggedObjects, function ($value) {
-            return $value->identifier->getTagNumber() === 3;
+            return $value->getIdentifier()->getTagNumber() === 3;
         });
 
         return array_pop($extensions);
@@ -98,7 +98,7 @@ class Certificate
 
         $children = $body->findChildrenByType(\FG\ASN1\ImplicitlyTaggedObject::class);
         $children = array_filter($children, function ($value) {
-            return $value->identifier->getTagNumber() === 0;
+            return $value->getIdentifier()->getTagNumber() === 0;
         });
 
         return bin2hex($children[0]->getBinaryContent());
@@ -121,7 +121,7 @@ class Certificate
             foreach ($oids as $oid) {
                 $siblings = $oid->getSiblings();
                 $uri      = array_filter($siblings, function ($value) {
-                    return $value->identifier->getTagNumber() === 6;
+                    return $value->getIdentifier()->getTagNumber() === 6;
                 });
                 $uri    = array_pop($uri);
                 $uris[] = $uri->getBinaryContent();

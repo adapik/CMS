@@ -69,7 +69,7 @@ class SignedData
             ->getChildren()[0]
             ->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
         $certificates = array_filter($fields, function(ASN1\Object $field) {
-            return $field->identifier->getTagNumber() === 0;
+            return $field->getIdentifier()->getTagNumber() === 0;
         });
 
         if ($certificates) {

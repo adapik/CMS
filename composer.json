@@ -1,0 +1,35 @@
+{
+  "name": "adapik/cms",
+  "description": "A PHP Library that allows you to decode ASN.1 CMS using Basic Encoding Rules (BER).",
+  "type": "library",
+  "homepage": "https://github.com/Adapik/CMS",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Alexander Danilov",
+      "email": "adapik@yandex.ru",
+      "homepage": "https://github.com/Adapik",
+      "role": "Author"
+    }
+  ],
+  "keywords": [ "cms", "pkcs7", "cades", "x690", "asn1", "asn.1", "ber", "der", "binary", "encoding", "decoding" ],
+
+  "require": {
+    "php": ">=7.0",
+    "ext-gmp": "*",
+    "adapik/phpasn1": "dev-master"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Adapik\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Adapik\\Test\\": "tests/"
+    }
+  }
+}

@@ -1,0 +1,163 @@
+<?php
+
+namespace Adapik\CMS;
+
+use FG\ASN1\ExplicitlyTaggedObject;
+use FG\ASN1\Universal\NullObject;
+use FG\ASN1\Universal\Sequence;
+use FG\ASN1\Universal\Set;
+use FG\ASN1\Universal\OctetString;
+use FG\ASN1;
+
+/**
+ * SignedData
+ */
+class SignedData
+{
+    const OID_DATA = '1.2.840.113549.1.7.1';
+
+    /**
+     * @var Sequence
+     */
+    private $sequence;
+
+    /**
+     * @param Sequence $object
+     */
+    public function __construct(Sequence $object)
+    {
+        $this->sequence = $object;
+    }
+
+    /**
+     * Message content
+     * @return ExplicitlyTaggedObject
+     * @throws \Exception
+     */
+    public function getSignedDataContent()
+    {
+        return $this->sequence->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class)[0];
+    }
+
+    /**
+     * SignerInfo of this message
+     * @return SignerInfo[]
+     */
+    public function getSignerInfo(): array
+    {
+        /** @var Set $signerInfoSet */
+        $signerInfoSet = $this->getSignedDataContent()
+            ->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[0]
+            ->findChildrenByType(\FG\ASN1\Universal\Set::class)[1];
+
+        $signerInfoObjects = [];
+        foreach ($signerInfoSet->getChildren() as $child) {
+            /** @var Sequence $child */
+            $signerInfoObjects[] = new SignerInfo($child);
+        }
+        return $signerInfoObjects;
+    }
+
+    /**
+     * Certificates of this message
+     * @return Certificate[]
+     * @throws \Exception
+     */
+    public function extractCertificates(): array
+    {
+        $fields = $this->getSignedDataContent()
+            ->getChildren()[0]
+            ->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
+        foreach ($fields as $field) {
+            if ($field->identifier->getTagNumber() === 0) {
+                $certificates = $field;
+                break;
+            }
+        }
+        if (isset($certificates) && !empty($certificates)) {
+            $certs = $certificates->getChildren();
+            foreach ($certs as $cert) {
+                /** @var Sequence $cert */
+                $x509Certs[] = new Certificate($cert);
+            }
+            return $x509Certs ?? [];
+        }
+
+        return [];
+    }
+
+    /**
+     * If there is a signed content
+     * @return bool
+     */
+    public function hasData()
+    {
+        $siblings = $this->sequence->findByOid(self::OID_DATA)[0]->getSiblings();
+        /** @var ExplicitlyTaggedObject|null $dataValue */
+        $dataValue = !empty($siblings) ? $siblings[0] : null;
+        if (null === $dataValue || $dataValue instanceof NullObject) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Make SignedData detached
+     *
+     * @return SignedData
+     */
+    public function detachData()
+    {
+        if ($this->hasData()) {
+            /** @var  $dataValue */
+            $dataValue = $this->sequence->findByOid(self::OID_DATA)[0]->getSiblings()[0];
+            $parent    = $dataValue->remove();
+            $sequence  = isset($parent) ? $parent->getRoot() : $this->sequence;
+            return new SignedData($sequence);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get signed content as binary string
+     * @return null|string
+     */
+    public function getData()
+    {
+        $siblings = $this->sequence->findByOid(self::OID_DATA)[0]->getSiblings();
+        /** @var ExplicitlyTaggedObject|null $dataValue */
+        $dataValue = count($siblings) > 0 ? $siblings[0] : null;
+
+        if (null === $dataValue || $dataValue instanceof NullObject) {
+            return null;
+        }
+        /** @var OctetString $octetString */
+        $octetString = $dataValue->getChildren()[0];
+        $data        = '';
+        if ($octetString->isConstructed()) {
+            foreach ($octetString->getChildren() as $child) {
+                /** @var OctetString $child */
+                $data .= $child->getBinaryContent();
+            }
+        } else {
+            $data = $octetString->getBinaryContent();
+        }
+        return $data;
+    }
+
+    /**
+     * Конструктор из бинарных данных
+     *
+     * @param $content
+     *
+     * @return SignedData
+     */
+    public static function createFromContent($content)
+    {
+        /** @var \FG\ASN1\Universal\Sequence $sequence */
+        $sequence   = ASN1\Object::fromFile($content);
+        return new self($sequence);
+    }
+}

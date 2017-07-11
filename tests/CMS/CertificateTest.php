@@ -16,44 +16,88 @@ class CertificateTest extends TestCase
     const CERT_OCSP_URI       = 'http://ocsp.usertrust.com';
 
     /**
-     * Binary content of Certificate file
+     * Binary content of User Certificate file
      *
      * @var string
      */
-    private $content;
+    private $userCert;
+
+    /**
+     * Binary content of CA Certificate file
+     *
+     * @var string
+     */
+    private $caCert;
 
     public function setUp()
     {
-        $this->content = base64_decode(file_get_contents(__DIR__ . '/../fixtures/phpnet.crt'));
+        $this->userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/phpnet.crt'));
+        $this->caCert   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cacert.crt'));
     }
 
     public function testParseCert()
     {
-        $cert = Certificate::createFromContent($this->content);
+        $cert = Certificate::createFromContent($this->userCert);
         $this->assertInstanceOf(Certificate::class, $cert);
     }
 
     public function testGetSerial()
     {
-        $cert = Certificate::createFromContent($this->content);
+        $cert = Certificate::createFromContent($this->userCert);
         $this->assertEquals(self::CERT_SERIAL, $cert->getSerial());
     }
 
     public function testGetSubjectKeyIdentifier()
     {
-        $cert = Certificate::createFromContent($this->content);
+        $cert = Certificate::createFromContent($this->userCert);
         $this->assertEquals(self::CERT_SUBJECT_KEY_ID, $cert->getSubjectKeyIdentifier());
     }
 
     public function testGetAuthorityKeyIdentifier()
     {
-        $cert = Certificate::createFromContent($this->content);
+        $cert = Certificate::createFromContent($this->userCert);
         $this->assertEquals(self::CERT_ISSUER_KEY_ID, $cert->getAuthorityKeyIdentifier());
     }
 
     public function testGetOcspUris()
     {
-        $cert = Certificate::createFromContent($this->content);
+        $cert = Certificate::createFromContent($this->userCert);
         $this->assertEquals([self::CERT_OCSP_URI], $cert->getOcspUris());
+    }
+
+    public function testGetIssuer()
+    {
+        $cert = Certificate::createFromContent($this->userCert);
+        $this->assertEquals('Country Name: FR; State or Province Name: Paris; Locality Name: Paris; Organization Name: Gandi; Common Name: Gandi Standard SSL CA 2', (string) $cert->getIssuer());
+    }
+
+    public function testGetSubject()
+    {
+        $cert = Certificate::createFromContent($this->userCert);
+        $this->assertEquals('Organization Unit Name: Domain Control Validated; Organization Unit Name: Gandi Standard Wildcard SSL; Common Name: *.php.net', (string) $cert->getSubject());
+    }
+
+    public function testGetValidNotBefore()
+    {
+        $cert = Certificate::createFromContent($this->userCert);
+        $this->assertEquals("2016-06-02\t00:00:00", (string) $cert->getValidNotBefore());
+    }
+
+    public function testGetValidNotAfter()
+    {
+        $cert = Certificate::createFromContent($this->userCert);
+        $this->assertEquals("2019-06-02\t23:59:59", (string) $cert->getValidNotAfter());
+    }
+
+    public function testIsCAFalse()
+    {
+        $cert = Certificate::createFromContent($this->userCert);
+        $this->assertFalse($cert->isCa());
+    }
+
+    public function testIsCATrue()
+    {
+        $cert = Certificate::createFromContent($this->caCert);
+        $this->assertTrue($cert->isCa());
     }
 }

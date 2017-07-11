@@ -5,7 +5,6 @@ namespace Adapik\CMS;
 use FG\ASN1;
 use FG\ASN1\ImplicitlyTaggedObject;
 use FG\ASN1\Object;
-use FG\ASN1\Universal\OctetString;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -14,6 +13,7 @@ use FG\ASN1\Universal\Sequence;
 class Certificate
 {
     const OID_EXTENSION_SUBJECT_KEY_ID        = '2.5.29.14';
+    const OID_EXTENSION_BASIC_CONSTRAINTS     = '2.5.29.19';
     const OID_EXTENSION_AUTHORITY_KEY_ID      = '2.5.29.35';
     const OID_EXTENSION_AUTHORITY_INFO_ACCESS = '1.3.6.1.5.5.7.1.1';
     const OID_OCSP_URI                        = '1.3.6.1.5.5.7.48.1';
@@ -64,16 +64,15 @@ class Certificate
     /**
      * @param string $oid
      *
-     * @return OctetString|null
+     * @return Object|null
      */
     private function getExtension(string $oid)
     {
         $oid = $this->getExtensions()->findByOid($oid);
 
         if ($oid) {
-            $siblings = $oid[0]->getSiblings();
-
-            return $siblings[0];
+            $value = $oid[0]->getParent()->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0]->getBinaryContent();
+            return Object::fromBinary($value);
         }
 
         return null;
@@ -84,10 +83,9 @@ class Certificate
      */
     public function getSubjectKeyIdentifier(): string
     {
-        $content = $this->getExtension(self::OID_EXTENSION_SUBJECT_KEY_ID)->getBinaryContent();
-        $body    = Object::fromBinary($content);
+        $content = $this->getExtension(self::OID_EXTENSION_SUBJECT_KEY_ID);
 
-        return bin2hex($body->getBinaryContent());
+        return bin2hex($content->getBinaryContent());
     }
 
     /**
@@ -95,10 +93,9 @@ class Certificate
      */
     public function getAuthorityKeyIdentifier(): string
     {
-        $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_KEY_ID)->getBinaryContent();
-        $body    = Object::fromBinary($content);
+        $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_KEY_ID);
 
-        $children = $body->findChildrenByType(ImplicitlyTaggedObject::class);
+        $children = $content->findChildrenByType(ImplicitlyTaggedObject::class);
         $children = array_filter($children, function ($value) {
             return $value->identifier->getTagNumber() === 0;
         });
@@ -111,10 +108,9 @@ class Certificate
      */
     public function getOcspUris(): array
     {
-        $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_INFO_ACCESS)->getBinaryContent();
-        $body    = Object::fromBinary($content);
+        $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_INFO_ACCESS);
 
-        $oids = $body->findByOid(self::OID_OCSP_URI);
+        $oids = $content->findByOid(self::OID_OCSP_URI);
 
         $uris = [];
 
@@ -131,6 +127,55 @@ class Certificate
         }
 
         return $uris;
+    }
+
+    /**
+     * @return Name
+     */
+    public function getIssuer()
+    {
+        return new Name($this->getTBSCertificate()->getChildren()[3]);
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getValidNotBefore(): string
+    {
+        return (string) $this->getTBSCertificate()->getChildren()[4]->getChildren()[0];
+    }
+
+    /**
+     * @return string
+     */
+    public function getValidNotAfter(): string
+    {
+        return (string) $this->getTBSCertificate()->getChildren()[4]->getChildren()[1];
+    }
+
+    /**
+     * @return Name
+     */
+    public function getSubject()
+    {
+        return new Name($this->getTBSCertificate()->getChildren()[5]);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCa(): bool
+    {
+        $basicConstraints = $this->getExtension(self::OID_EXTENSION_BASIC_CONSTRAINTS);
+
+        $isCa = 'false';
+
+        if ($basicConstraints) {
+            $isCa = $basicConstraints->getChildren()[0] ?? 'false';
+        }
+
+        return ((string) $isCa) === 'true';
     }
 
     /**

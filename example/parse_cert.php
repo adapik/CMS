@@ -2,17 +2,12 @@
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-$t1         = microtime(true);
-$signedData = \Adapik\CMS\SignedData::createFromContent(file_get_contents('php://stdin'));
-$t2         = microtime(true);
+$t1          = microtime(true);
+$certificate = \Adapik\CMS\Certificate::createFromContent(file_get_contents('php://stdin'));
+$t2          = microtime(true);
 
 echo 'Parsed in:' . ($t2 - $t1) . 's';
 echo "\n";
-
-echo 'Signature Type: ' . $signedData->getSignerInfo()[0]->defineType();
-echo "\n";
-
-$certificate = $signedData->extractCertificates()[0];
 
 echo 'Issuer: ' . (string) $certificate->getIssuer();
 echo "\n";
@@ -27,6 +22,8 @@ echo "\n";
 echo 'Certificate authorityKeyIdentifier: ' . $certificate->getAuthorityKeyIdentifier();
 echo "\n";
 echo 'OCSP Uri: ' . implode(',', $certificate->getOcspUris());
+echo "\n";
+echo 'CA: ' . ($certificate->isCa() ? 'true' : 'false');
 echo "\n";
 
 $t3 = microtime(true);

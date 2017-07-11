@@ -3,7 +3,6 @@
 namespace Adapik\CMS;
 
 use FG\ASN1;
-use FG\ASN1\ImplicitlyTaggedObject;
 use FG\ASN1\Object;
 use FG\ASN1\Universal\Sequence;
 
@@ -54,21 +53,20 @@ class Certificate
     {
         $exTaggedObjects = $this->getTBSCertificate()->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
         $extensions      = array_filter($exTaggedObjects, function ($value) {
-            if ($value->identifier->getTagNumber() == 3) return true;
-            return false;
+            return $value->getIdentifier()->getTagNumber() === 3;
         });
 
         return array_pop($extensions);
     }
 
     /**
-     * @param string $oid
+     * @param string $oidString
      *
      * @return Object|null
      */
-    private function getExtension(string $oid)
+    private function getExtension(string $oidString)
     {
-        $oid = $this->getExtensions()->findByOid($oid);
+        $oid = $this->getExtensions()->findByOid($oidString);
 
         if ($oid) {
             $value = $oid[0]->getParent()->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0]->getBinaryContent();
@@ -95,9 +93,9 @@ class Certificate
     {
         $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_KEY_ID);
 
-        $children = $content->findChildrenByType(ImplicitlyTaggedObject::class);
+        $children = $content->findChildrenByType(\FG\ASN1\ImplicitlyTaggedObject::class);
         $children = array_filter($children, function ($value) {
-            return $value->identifier->getTagNumber() === 0;
+            return $value->getIdentifier()->getTagNumber() === 0;
         });
 
         return bin2hex($children[0]->getBinaryContent());
@@ -119,7 +117,7 @@ class Certificate
             foreach ($oids as $oid) {
                 $siblings = $oid->getSiblings();
                 $uri      = array_filter($siblings, function ($value) {
-                    return $value->identifier->getTagNumber() === 6;
+                    return $value->getIdentifier()->getTagNumber() === 6;
                 });
                 $uri    = array_pop($uri);
                 $uris[] = $uri->getBinaryContent();

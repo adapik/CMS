@@ -68,13 +68,12 @@ class SignedData
         $fields = $this->getSignedDataContent()
             ->getChildren()[0]
             ->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
-        foreach ($fields as $field) {
-            if ($field->identifier->getTagNumber() === 0) {
-                $certificates = $field;
-                break;
-            }
-        }
-        if (isset($certificates) && !empty($certificates)) {
+        $certificates = array_filter($fields, function(ASN1\Object $field) {
+            return $field->getIdentifier()->getTagNumber() === 0;
+        });
+
+        if ($certificates) {
+            $certificates = array_pop($certificates);
             $certs = $certificates->getChildren();
             foreach ($certs as $cert) {
                 /** @var Sequence $cert */
@@ -113,7 +112,7 @@ class SignedData
             /** @var  $dataValue */
             $dataValue = $this->sequence->findByOid(self::OID_DATA)[0]->getSiblings()[0];
             $parent    = $dataValue->remove();
-            $sequence  = isset($parent) ? $parent->getRoot() : $this->sequence;
+            $sequence  = null !== $parent ? $parent->getRoot() : $this->sequence;
             return new SignedData($sequence);
         }
 

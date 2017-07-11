@@ -42,7 +42,7 @@ class SignerInfo
     {
         $exTaggedObjects = $this->sequence->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
         $attributes      = array_filter($exTaggedObjects, function ($value) {
-            return $value->identifier->getTagNumber() === 1;
+            return $value->getIdentifier()->getTagNumber() === 1;
         });
         
         return array_pop($attributes);
@@ -56,7 +56,7 @@ class SignerInfo
     {
         $exTaggedObjects = $this->sequence->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
         $attributes      = array_filter($exTaggedObjects, function ($value) {
-            return $value->identifier->getTagNumber() === 0;
+            return $value->getIdentifier()->getTagNumber() === 0;
         });
         
         return array_pop($attributes);

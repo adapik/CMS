@@ -68,13 +68,13 @@ class CertificateTest extends TestCase
     public function testGetIssuer()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals('Country Name: FR; State or Province Name: Paris; Locality Name: Paris; Organization Name: Gandi; Common Name: Gandi Standard SSL CA 2', (string) $cert->getIssuer());
+        $this->assertEquals('2.5.4.6: FR; 2.5.4.8: Paris; 2.5.4.7: Paris; 2.5.4.10: Gandi; 2.5.4.3: Gandi Standard SSL CA 2', (string) $cert->getIssuer());
     }
 
     public function testGetSubject()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals('Organization Unit Name: Domain Control Validated; Organization Unit Name: Gandi Standard Wildcard SSL; Common Name: *.php.net', (string) $cert->getSubject());
+        $this->assertEquals('2.5.4.11: Domain Control Validated; 2.5.4.11: Gandi Standard Wildcard SSL; 2.5.4.3: *.php.net', (string) $cert->getSubject());
     }
 
     public function testGetValidNotBefore()

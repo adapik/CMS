@@ -3,7 +3,6 @@
 namespace Adapik\CMS;
 
 use FG\ASN1;
-use FG\ASN1\Object;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -43,7 +42,7 @@ class Certificate
      */
     public function getSerial(): string
     {
-        return $this->getTBSCertificate()->findChildrenByType(\FG\ASN1\Universal\Integer::class)[0]->getStringValue();
+        return (string) $this->getTBSCertificate()->findChildrenByType(\FG\ASN1\Universal\Integer::class)[0];
     }
 
     /**
@@ -52,7 +51,7 @@ class Certificate
     private function getExtensions()
     {
         $exTaggedObjects = $this->getTBSCertificate()->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
-        $extensions      = array_filter($exTaggedObjects, function ($value) {
+        $extensions      = array_filter($exTaggedObjects, function (ASN1\ASN1Object $value) {
             return $value->getIdentifier()->getTagNumber() === 3;
         });
 
@@ -62,7 +61,7 @@ class Certificate
     /**
      * @param string $oidString
      *
-     * @return Object|null
+     * @return ASN1\ASN1Object|null
      */
     private function getExtension(string $oidString)
     {
@@ -70,7 +69,7 @@ class Certificate
 
         if ($oid) {
             $value = $oid[0]->getParent()->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0]->getBinaryContent();
-            return Object::fromBinary($value);
+            return ASN1\ASN1Object::fromBinary($value);
         }
 
         return null;
@@ -94,7 +93,7 @@ class Certificate
         $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_KEY_ID);
 
         $children = $content->findChildrenByType(\FG\ASN1\ImplicitlyTaggedObject::class);
-        $children = array_filter($children, function ($value) {
+        $children = array_filter($children, function (ASN1\ASN1Object $value) {
             return $value->getIdentifier()->getTagNumber() === 0;
         });
 
@@ -116,7 +115,7 @@ class Certificate
             $uris = [];
             foreach ($oids as $oid) {
                 $siblings = $oid->getSiblings();
-                $uri      = array_filter($siblings, function ($value) {
+                $uri      = array_filter($siblings, function (ASN1\ASN1Object $value) {
                     return $value->getIdentifier()->getTagNumber() === 6;
                 });
                 $uri    = array_pop($uri);
@@ -186,7 +185,7 @@ class Certificate
     public static function createFromContent($content)
     {
         /** @var \FG\ASN1\Universal\Sequence $sequence */
-        $sequence = ASN1\Object::fromFile($content);
+        $sequence = ASN1\ASN1Object::fromFile($content);
         return new self($sequence);
     }
 }

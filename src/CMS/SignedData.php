@@ -68,7 +68,7 @@ class SignedData
         $fields = $this->getSignedDataContent()
             ->getChildren()[0]
             ->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
-        $certificates = array_filter($fields, function(ASN1\Object $field) {
+        $certificates = array_filter($fields, function(ASN1\ASN1Object $field) {
             return $field->getIdentifier()->getTagNumber() === 0;
         });
 
@@ -156,7 +156,7 @@ class SignedData
     public static function createFromContent($content)
     {
         /** @var \FG\ASN1\Universal\Sequence $sequence */
-        $sequence   = ASN1\Object::fromFile($content);
+        $sequence   = ASN1\ASN1Object::fromFile($content);
         return new self($sequence);
     }
 }

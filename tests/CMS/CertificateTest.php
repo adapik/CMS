@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
  */
 class CertificateTest extends TestCase
 {
-    const CERT_SERIAL         = '0191475573341482871230183340876003493987';
+    const CERT_SERIAL         = '191475573341482871230183340876003493987';
     const CERT_SUBJECT_KEY_ID = '005ecbf504b0d74b3517cc4ebc1dc73e3731d237';
     const CERT_ISSUER_KEY_ID  = 'b390a7d8c9af4ecd613c9f7cad5d7f41fd6930ea';
     const CERT_OCSP_URI       = 'http://ocsp.usertrust.com';
@@ -80,13 +80,13 @@ class CertificateTest extends TestCase
     public function testGetValidNotBefore()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals("2016-06-02\t00:00:00", (string) $cert->getValidNotBefore());
+        $this->assertEquals('2016-06-02T00:00:00+00:00', (string) $cert->getValidNotBefore());
     }
 
     public function testGetValidNotAfter()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals("2019-06-02\t23:59:59", (string) $cert->getValidNotAfter());
+        $this->assertEquals('2019-06-02T23:59:59+00:00', (string) $cert->getValidNotAfter());
     }
 
     public function testIsCAFalse()

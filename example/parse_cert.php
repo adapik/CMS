@@ -9,7 +9,7 @@ $t2          = microtime(true);
 echo 'Parsed in:' . ($t2 - $t1) . 's';
 echo "\n";
 
-echo 'Issuer: ' . (string) $certificate->getIssuer();
+echo 'Issuer:  ' . (string) $certificate->getIssuer();
 echo "\n";
 echo 'Subject: ' . (string) $certificate->getSubject();
 echo "\n";

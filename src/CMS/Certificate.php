@@ -86,11 +86,15 @@ class Certificate
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getAuthorityKeyIdentifier(): string
+    public function getAuthorityKeyIdentifier()
     {
         $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_KEY_ID);
+
+        if(null === $content) {
+            return null;
+        }
 
         $children = $content->findChildrenByType(\FG\ASN1\ImplicitlyTaggedObject::class);
         $children = array_filter($children, function (ASN1\ASN1Object $value) {
@@ -106,6 +110,10 @@ class Certificate
     public function getOcspUris(): array
     {
         $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_INFO_ACCESS);
+
+        if (null === $content) {
+           return [];
+        }
 
         $oids = $content->findByOid(self::OID_OCSP_URI);
 

@@ -10,6 +10,7 @@ namespace Adapik\Test\CMS;
 
 use Adapik\CMS\Mapper;
 use Adapik\CMS\Maps\Certificate;
+use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Identifier;
 use FG\ASN1\Universal\Boolean;
 use FG\ASN1\Universal\Integer;
@@ -265,6 +266,29 @@ class MapperTest extends TestCase
         $this->assertCount(2, $mappedObject);
     }
 
+    public function testMapExplicitlyTaggedObject()
+    {
+        $map = [
+            'implicit' => true,
+            'constant' => 0,
+        ] + [
+                'type'     => Identifier::SET,
+                'children' => [
+                    'oid'  => ['type' => Identifier::OBJECT_IDENTIFIER],
+                    'bool'  => ['type' => Identifier::BOOLEAN],
+                ]
+            ];
+
+        $set = Set::create([
+            Boolean::create(true),
+            ObjectIdentifier::create('123.2.1'),
+        ]);
+
+        $taggedObject = ExplicitlyTaggedObject::create(0, $set);
+        $mappedObject = Mapper::map($taggedObject, $map);
+        $this->assertCount(2, $mappedObject);
+    }
+
     public function testMapCert()
     {
         //$this->markTestIncomplete();
@@ -272,6 +296,6 @@ class MapperTest extends TestCase
         $userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/phpnet.crt'));
         $sequence = \FG\ASN1\ASN1Object::fromFile($userCert);
         $mappedObject = Mapper::map($sequence, $map);
-        $this->assertNotNull($sequence);
+        $this->assertNotNull($mappedObject);
     }
 }

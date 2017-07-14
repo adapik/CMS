@@ -16,7 +16,11 @@ class Mapper
     public static function map(ASN1Object $object, array $mapping)
     {
         if ((isset($mapping['explicit']) || isset($mapping['implicit'])) && count($object->getChildren()) > 0) {
-            $object = $object->getChildren()[0];
+            if (array_key_exists('constant', $mapping) && $mapping['constant'] === $object->getIdentifier()->getTagNumber()) {
+                $object = $object->getChildren()[0];
+            } else {
+                return null;
+            }
         }
 
         switch (true) {
@@ -78,9 +82,10 @@ class Mapper
                 for ($i = 0; $i < $childrenCount; $i++) {
                     $currentChild   = $object->getChildren()[$i];
                     $currentMapping = reset($mapping['children']);
+                    $currentKey = key($mapping['children']);
                     $matched = self::map($currentChild, $currentMapping);
                     if ($matched) {
-                        $map[] = $matched = self::map($currentChild, $currentMapping);
+                        $map[$currentKey] = $matched = self::map($currentChild, $currentMapping);
                         array_shift($mapping['children']);
                     }
 
@@ -89,7 +94,7 @@ class Mapper
                         $currentMapping = reset($mapping['children']);
                         $matched = self::map($currentChild, $currentMapping);
                         if ($matched) {
-                            $map[] = $matched = self::map($currentChild, $currentMapping);
+                            $map[$currentKey] = $matched = self::map($currentChild, $currentMapping);
                             array_shift($mapping['children']);
                             break;
                         }
@@ -130,7 +135,7 @@ class Mapper
                     foreach ($mapping['children'] as $key => $childMapping) {
                         $matched = self::map($currentChild, $childMapping);
                         if ($matched) {
-                            $map[] = $matched;
+                            $map[$key] = $matched;
                             unset($mapping['children'][$key]);
                             break;
                         }

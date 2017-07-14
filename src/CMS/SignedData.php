@@ -147,6 +147,14 @@ class SignedData
     }
 
     /**
+     * @return string
+     */
+    public function getBinary(): string
+    {
+        return $this->sequence->getBinary();
+    }
+
+    /**
      * Конструктор из бинарных данных
      *
      * @param $content

@@ -13,7 +13,7 @@
  * @link      http://phpseclib.sourceforge.net
  */
 
-namespace FG\ASN1\Maps;
+namespace Adapik\CMS\Maps;
 
 use FG\ASN1\Identifier;
 
@@ -35,7 +35,7 @@ abstract class RC2CBCParameter
                 'type'     => Identifier::INTEGER,
                 'optional' => true
             ],
-            'iv'=> ['type' => Identifier::OCTET_STRING]
+            'iv'=> ['type' => Identifier::OCTETSTRING]
         ]
     ];
 }

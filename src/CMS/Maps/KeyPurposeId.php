@@ -13,7 +13,7 @@
  * @link      http://phpseclib.sourceforge.net
  */
 
-namespace FG\ASN1\Maps;
+namespace Adapik\CMS\Maps;
 
 use FG\ASN1\Identifier;
 

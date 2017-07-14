@@ -13,7 +13,7 @@
  * @link      http://phpseclib.sourceforge.net
  */
 
-namespace FG\ASN1\Maps;
+namespace Adapik\CMS\Maps;
 
 use FG\ASN1\Identifier;
 
@@ -26,5 +26,5 @@ use FG\ASN1\Identifier;
  */
 abstract class PrivateKey
 {
-    const MAP = ['type' => Identifier::OCTET_STRING];
+    const MAP = ['type' => Identifier::OCTETSTRING];
 }

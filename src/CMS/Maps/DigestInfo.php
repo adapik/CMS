@@ -13,7 +13,7 @@
  * @link      http://phpseclib.sourceforge.net
  */
 
-namespace FG\ASN1\Maps;
+namespace Adapik\CMS\Maps;
 
 use FG\ASN1\Identifier;
 
@@ -32,7 +32,7 @@ abstract class DigestInfo
         'type'     => Identifier::SEQUENCE,
         'children' => [
             'digestAlgorithm' => AlgorithmIdentifier::MAP,
-            'digest' => ['type' => Identifier::OCTET_STRING]
+            'digest' => ['type' => Identifier::OCTETSTRING]
         ]
     ];
 }

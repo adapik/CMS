@@ -13,7 +13,7 @@
  * @link      http://phpseclib.sourceforge.net
  */
 
-namespace FG\ASN1\Maps;
+namespace Adapik\CMS\Maps;
 
 use FG\ASN1\Identifier;
 
@@ -31,7 +31,7 @@ abstract class PBEParameter
     const MAP = [
         'type'     => Identifier::SEQUENCE,
         'children' => [
-            'salt' => ['type' => Identifier::OCTET_STRING],
+            'salt' => ['type' => Identifier::OCTETSTRING],
             'iterationCount' => ['type' => Identifier::INTEGER]
         ]
     ];

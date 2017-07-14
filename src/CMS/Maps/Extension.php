@@ -13,7 +13,7 @@
  * @link      http://phpseclib.sourceforge.net
  */
 
-namespace FG\ASN1\Maps;
+namespace Adapik\CMS\Maps;
 
 use FG\ASN1\Identifier;
 
@@ -41,7 +41,7 @@ abstract class Extension
                               'optional' => true,
                               'default'  => false
                           ],
-            'extnValue' => ['type' => Identifier::OCTET_STRING]
+            'extnValue' => ['type' => Identifier::OCTETSTRING]
         ]
     ];
 }

@@ -13,7 +13,7 @@
  * @link      http://phpseclib.sourceforge.net
  */
 
-namespace FG\ASN1\Maps;
+namespace Adapik\CMS\Maps;
 
 use FG\ASN1\Identifier;
 
@@ -68,7 +68,7 @@ abstract class GeneralName
                                              'implicit' => true
                                            ],
             'iPAddress'                 => [
-                                             'type' => Identifier::OCTET_STRING,
+                                             'type' => Identifier::OCTETSTRING,
                                              'constant' => 7,
                                              'optional' => true,
                                              'implicit' => true

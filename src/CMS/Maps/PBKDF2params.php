@@ -13,7 +13,7 @@
  * @link      http://phpseclib.sourceforge.net
  */
 
-namespace FG\ASN1\Maps;
+namespace Adapik\CMS\Maps;
 
 use FG\ASN1\Identifier;
 
@@ -33,7 +33,7 @@ abstract class PBKDF2params
         'children' => [
             // technically, this is a CHOICE in RFC2898 but the other "choice" is, currently, more of a placeholder
             // in the RFC
-            'salt'=> ['type' => Identifier::OCTET_STRING],
+            'salt'=> ['type' => Identifier::OCTETSTRING],
             'iterationCount'=> ['type' => Identifier::INTEGER],
             'keyLength' => [
                 'type'     => Identifier::INTEGER,

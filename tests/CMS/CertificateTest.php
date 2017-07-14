@@ -100,4 +100,10 @@ class CertificateTest extends TestCase
         $cert = Certificate::createFromContent($this->caCert);
         $this->assertTrue($cert->isCa());
     }
+
+    public function testGetBinary()
+    {
+        $cert = Certificate::createFromContent($this->caCert);
+        $this->assertSame($this->caCert, $cert->getBinary());
+    }
 }

@@ -25,7 +25,7 @@ class Mapper
 
         switch (true) {
             case $mapping['type'] === Identifier::ANY:
-                return $object;
+                return (string) $object;
                 break;
             case $mapping['type'] === Identifier::CHOICE:
                 foreach ($mapping['children'] as $key => $option) {
@@ -82,8 +82,8 @@ class Mapper
                 for ($i = 0; $i < $childrenCount; $i++) {
                     $currentChild   = $object->getChildren()[$i];
                     $currentMapping = reset($mapping['children']);
-                    $currentKey = key($mapping['children']);
-                    $matched = self::map($currentChild, $currentMapping);
+                    $currentKey     = key($mapping['children']);
+                    $matched        = self::map($currentChild, $currentMapping);
                     if ($matched) {
                         $map[$currentKey] = $matched = self::map($currentChild, $currentMapping);
                         array_shift($mapping['children']);
@@ -92,7 +92,8 @@ class Mapper
                     while (!$matched && array_key_exists('optional', $currentMapping) && $currentMapping['optional'] === true) {
                         array_shift($mapping['children']);
                         $currentMapping = reset($mapping['children']);
-                        $matched = self::map($currentChild, $currentMapping);
+                        $currentKey     = key($mapping['children']);
+                        $matched        = self::map($currentChild, $currentMapping);
                         if ($matched) {
                             $map[$currentKey] = $matched = self::map($currentChild, $currentMapping);
                             array_shift($mapping['children']);
@@ -101,17 +102,17 @@ class Mapper
                     }
                 }
 
-                $unprocessedMappings = array_filter($mapping['children'], function($map) {
+                $unprocessedMappings = array_filter($mapping['children'], function ($map) {
                     return !array_key_exists('optional', $map);
                 });
 
 
-                if(count($unprocessedMappings) > 0) {
+                if (count($unprocessedMappings) > 0) {
                     return null;
                 }
 
                 return $map;
-            break;
+                break;
             // the main diff between sets and sequences is the encapsulation of the foreach in another for loop
             case Identifier::SET:
                 $map = [];
@@ -142,18 +143,18 @@ class Mapper
                     }
                 }
 
-                $unprocessedMappings = array_filter($mapping['children'], function($map) {
+                $unprocessedMappings = array_filter($mapping['children'], function ($map) {
                     return !array_key_exists('optional', $map);
                 });
 
 
-                if(count($unprocessedMappings) > 0) {
+                if (count($unprocessedMappings) > 0) {
                     return null;
                 }
 
                 return $map;
             default:
-                return $object;
+                return (string)$object;
         }
     }
 }

@@ -31,8 +31,8 @@ class CertificateTest extends TestCase
 
     public function setUp()
     {
-        $this->userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/phpnet.crt'));
-        $this->caCert   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cacert.crt'));
+        $this->userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_user.crt'));
+        $this->caCert   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_ca.crt'));
     }
 
     public function testParseCert()

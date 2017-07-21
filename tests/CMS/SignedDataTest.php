@@ -57,11 +57,11 @@ class SignedDataTest extends TestCase
 
     private function getAttached()
     {
-        return file_get_contents(__DIR__ . '/../fixtures/attached_xlongtype1_chain.sig');
+        return file_get_contents(__DIR__ . '/../fixtures/cms_attached_chain.sig');
     }
 
     private function getDetached()
     {
-        return file_get_contents(__DIR__ . '/../fixtures/detached_t.sig');
+        return file_get_contents(__DIR__ . '/../fixtures/cms_detached_cert.sig');
     }
 }

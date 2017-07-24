@@ -28,12 +28,12 @@ class MapperTest extends TestCase
         $map = ['type' => Identifier::INTEGER];
 
         $object       = Integer::create(123);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertEquals($mappedObject, $object);
 
         $map          = ['type' => Identifier::BOOLEAN];
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertNull($mappedObject, $object);
     }
@@ -43,7 +43,7 @@ class MapperTest extends TestCase
         $map = ['type' => Identifier::ANY];
 
         $object       = Integer::create(123);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertEquals($mappedObject, $object);
     }
@@ -62,7 +62,7 @@ class MapperTest extends TestCase
             ObjectIdentifier::create('1.2.3'),
             ObjectIdentifier::create('1.2.4'),
         ]);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertCount(2, $mappedObject);
     }
@@ -81,7 +81,7 @@ class MapperTest extends TestCase
             ObjectIdentifier::create('1.2.3'),
             Integer::create(1),
         ]);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertNull($mappedObject);
     }
@@ -114,7 +114,7 @@ class MapperTest extends TestCase
             Integer::create(3),
             ObjectIdentifier::create('1.2.3'),
         ]);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertCount(4, $mappedObject);
 
@@ -123,7 +123,7 @@ class MapperTest extends TestCase
             OctetString::createFromString('testString'),
             ObjectIdentifier::create('1.2.3'),
         ]);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertCount(3, $mappedObject);
 
@@ -131,19 +131,19 @@ class MapperTest extends TestCase
             ObjectIdentifier::create('1.2.3'),
             ObjectIdentifier::create('1.2.4'),
         ]);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertCount(2, $mappedObject);
 
         $object       = Integer::create(123);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertNull($mappedObject, $object);
 
         $object       = Sequence::create([
             ObjectIdentifier::create('1.2.3'),
         ]);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
 
         $this->assertNull($mappedObject);
     }
@@ -162,7 +162,7 @@ class MapperTest extends TestCase
             ObjectIdentifier::create('1.2.3'),
             ObjectIdentifier::create('1.2.3.4'),
         ]);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
         $this->assertCount(2, $mappedObject);
     }
 
@@ -184,8 +184,16 @@ class MapperTest extends TestCase
             ObjectIdentifier::create('1.2.3.4'),
         ]);
 
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
         $this->assertCount(4, $mappedObject);
+
+        $object = Sequence::create([
+            ObjectIdentifier::create('1.2.3.1'),
+            Boolean::create(true),
+        ]);
+
+        $mappedObject = (new Mapper())->map($object, $map);
+        $this->assertNull($mappedObject);
     }
 
     public function testChoice()
@@ -199,15 +207,15 @@ class MapperTest extends TestCase
         ];
 
         $object       = Integer::create(1);
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
         $this->assertNotNull($mappedObject);
 
         $object       = ObjectIdentifier::create('1.2.3');
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
         $this->assertNotNull($mappedObject);
 
         $object       = PrintableString::createFromString('Test string');
-        $mappedObject = Mapper::map($object, $map);
+        $mappedObject = (new Mapper())->map($object, $map);
         $this->assertNull($mappedObject);
     }
 
@@ -225,17 +233,49 @@ class MapperTest extends TestCase
             Integer::create(1),
             ObjectIdentifier::create('1.2.4'),
         ]);
-        $mappedObject = Mapper::map($object, $map);
-
+        $mappedObject = (new Mapper())->map($object, $map);
         $this->assertCount(2, $mappedObject);
 
         $object       = Set::create([
             ObjectIdentifier::create('1.2.4'),
             Integer::create(1),
         ]);
-        $mappedObject = Mapper::map($object, $map);
-
+        $mappedObject = (new Mapper())->map($object, $map);
         $this->assertCount(2, $mappedObject);
+
+        $object       = Set::create([
+            Integer::create(1),
+        ]);
+        $mappedObject = (new Mapper())->map($object, $map);
+        $this->assertNull($mappedObject);
+    }
+
+    public function testSetOf()
+    {
+        $map = [
+            'type' => Identifier::SET,
+            'min'      => 1,
+            'max'      => -1,
+            'children' => [
+                'type'     => Identifier::OBJECT_IDENTIFIER
+            ]
+        ];
+
+        $object = Set::create([
+            ObjectIdentifier::create('1.2.3.1'),
+            ObjectIdentifier::create('1.2.3.2'),
+        ]);
+
+        $mappedObject = (new Mapper())->map($object, $map);
+        $this->assertCount(2, $mappedObject);
+
+        $object = Set::create([
+            ObjectIdentifier::create('1.2.3.1'),
+            Boolean::create(true),
+        ]);
+
+        $mappedObject = (new Mapper())->map($object, $map);
+        $this->assertNull($mappedObject);
     }
 
     public function testMapSetWithOptional()
@@ -261,7 +301,7 @@ class MapperTest extends TestCase
             ObjectIdentifier::create('123.2.1'),
         ]);
 
-        $mappedObject = Mapper::map($set, $map);
+        $mappedObject = (new Mapper())->map($set, $map);
 
         $this->assertCount(2, $mappedObject);
     }
@@ -285,7 +325,7 @@ class MapperTest extends TestCase
         ]);
 
         $taggedObject = ExplicitlyTaggedObject::create(0, $set);
-        $mappedObject = Mapper::map($taggedObject, $map);
+        $mappedObject = (new Mapper())->map($taggedObject, $map);
         $this->assertCount(2, $mappedObject);
     }
 
@@ -295,7 +335,7 @@ class MapperTest extends TestCase
         $map = Certificate::MAP;
         $userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/phpnet.crt'));
         $sequence = \FG\ASN1\ASN1Object::fromFile($userCert);
-        $mappedObject = Mapper::map($sequence, $map);
+        $mappedObject = (new Mapper())->map($sequence, $map);
         $this->assertNotNull($mappedObject);
     }
 }

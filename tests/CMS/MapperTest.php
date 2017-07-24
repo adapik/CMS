@@ -309,7 +309,7 @@ class MapperTest extends TestCase
     public function testMapExplicitlyTaggedObject()
     {
         $map = [
-            'implicit' => true,
+            'explicit' => true,
             'constant' => 0,
         ] + [
                 'type'     => Identifier::SET,

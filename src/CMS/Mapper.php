@@ -1,21 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Adapik
- * Date: 13.07.2017
- * Time: 21:51
- */
 
 namespace Adapik\CMS;
 
 use FG\ASN1\ASN1Object;
 use FG\ASN1\Identifier;
+use FG\ASN1\ImplicitlyTaggedObject;
 
 class Mapper
 {
     public function map(ASN1Object $object, array $mapping)
     {
-        if ($this->isTaggedObject($mapping) && count($object->getChildren()) > 0) {
+        if ($this->isTaggedObject($mapping)) {
             return $this->mapTaggedObject($object, $mapping);
         }
 
@@ -50,14 +45,25 @@ class Mapper
     private function mapTaggedObject(ASN1Object $object, array $mapping)
     {
         $tagNumber = $object->getIdentifier()->getTagNumber();
-        if (array_key_exists('constant', $mapping) && $mapping['constant'] === $tagNumber) {
-            $object = $object->getChildren()[0];
-            unset($mapping['explicit'], $mapping['implicit'], $mapping['constant']);
 
-            return $this->map($object, $mapping);
+        if (!array_key_exists('constant', $mapping) || $mapping['constant'] !== $tagNumber) {
+            return null;
         }
 
-        return null;
+        if (array_key_exists('explicit', $mapping) && count($object->getChildren()) === 1) {
+            $object = $object->getChildren()[0];
+        }
+
+        if (array_key_exists('implicit', $mapping) &&
+            array_key_exists('type', $mapping) &&
+            $object instanceof ImplicitlyTaggedObject
+        ) {
+            $object = $object->getDecoratedObject($mapping['type']);
+        }
+
+        unset($mapping['explicit'], $mapping['implicit'], $mapping['constant']);
+
+        return $this->map($object, $mapping);
     }
 
     private function mapChoiceObject(ASN1Object $object, array $mapping)

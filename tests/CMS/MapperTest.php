@@ -10,6 +10,7 @@ namespace Adapik\Test\CMS;
 
 use Adapik\CMS\Mapper;
 use Adapik\CMS\Maps\Certificate;
+use Adapik\CMS\Maps\SignerInfo;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Identifier;
 use FG\ASN1\Universal\Boolean;
@@ -335,6 +336,16 @@ class MapperTest extends TestCase
         $map = Certificate::MAP;
         $userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/phpnet.crt'));
         $sequence = \FG\ASN1\ASN1Object::fromFile($userCert);
+        $mappedObject = (new Mapper())->map($sequence, $map);
+        $this->assertNotNull($mappedObject);
+    }
+
+    public function testMapSignerInfo()
+    {
+        //$this->markTestIncomplete();
+        $map = SignerInfo::MAP;
+        $signerInfo = base64_decode(file_get_contents(__DIR__ . '/../fixtures/signer_info_cades_bes'));
+        $sequence = \FG\ASN1\ASN1Object::fromFile($signerInfo);
         $mappedObject = (new Mapper())->map($sequence, $map);
         $this->assertNotNull($mappedObject);
     }

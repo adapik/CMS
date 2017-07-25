@@ -1,12 +1,7 @@
 <?php
 
-namespace CMS\Maps;
+namespace Adapik\CMS\Maps;
 
-use Adapik\CMS\Maps\AlgorithmIdentifier;
-use Adapik\CMS\Maps\Attributes;
-use Adapik\CMS\Maps\CertificateSerialNumber;
-use Adapik\CMS\Maps\KeyIdentifier;
-use Adapik\CMS\Maps\Name;
 use FG\ASN1\Identifier;
 
 /**
@@ -39,21 +34,18 @@ class SignerInfo
             ],
             'digestAlgorithm' => AlgorithmIdentifier::MAP,
             'signedAttrs' => [
-                [
                     'constant' => 0,
                     'optional' => true,
                     'implicit' => true
                 ] + Attributes::MAP,
-            ],
             'signatureAlgorithm' => AlgorithmIdentifier::MAP,
             'signature' => ['type' => Identifier::OCTETSTRING],
             'unsignedAttrs' => [
-                [
-                    'constant' => 0,
+                    'constant' => 1,
                     'optional' => true,
                     'implicit' => true
-                ] + Attributes::MAP,
-            ],
+                ] + Attributes::MAP
+            ,
         ]
     ];
 }

@@ -55,8 +55,7 @@ class Mapper
         }
 
         if (array_key_exists('implicit', $mapping) &&
-            array_key_exists('type', $mapping) &&
-            $object instanceof ImplicitlyTaggedObject
+            array_key_exists('type', $mapping)
         ) {
             $object = $object->getDecoratedObject($mapping['type']);
         }

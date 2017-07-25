@@ -31,8 +31,8 @@ class CertificateTest extends TestCase
 
     public function setUp()
     {
-        $this->userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/phpnet.crt'));
-        $this->caCert   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cacert.crt'));
+        $this->userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_user.crt'));
+        $this->caCert   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_ca.crt'));
     }
 
     public function testParseCert()
@@ -99,5 +99,11 @@ class CertificateTest extends TestCase
     {
         $cert = Certificate::createFromContent($this->caCert);
         $this->assertTrue($cert->isCa());
+    }
+
+    public function testGetBinary()
+    {
+        $cert = Certificate::createFromContent($this->caCert);
+        $this->assertSame($this->caCert, $cert->getBinary());
     }
 }

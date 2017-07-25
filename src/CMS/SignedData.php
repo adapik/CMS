@@ -102,24 +102,6 @@ class SignedData
     }
 
     /**
-     * Make SignedData detached
-     *
-     * @return SignedData
-     */
-    public function detachData()
-    {
-        if ($this->hasData()) {
-            /** @var  $dataValue */
-            $dataValue = $this->sequence->findByOid(self::OID_DATA)[0]->getSiblings()[0];
-            $parent    = $dataValue->remove();
-            $sequence  = null !== $parent ? $parent->getRoot() : $this->sequence;
-            return new SignedData($sequence);
-        }
-
-        return $this;
-    }
-
-    /**
      * Get signed content as binary string
      * @return null|string
      */
@@ -144,6 +126,14 @@ class SignedData
             $data = $octetString->getBinaryContent();
         }
         return $data;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBinary(): string
+    {
+        return $this->sequence->getBinary();
     }
 
     /**

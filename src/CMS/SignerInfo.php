@@ -63,19 +63,21 @@ class SignerInfo
     }
 
     /**
-     * Signature as as a string
+     * Signature as as a hex string
      * @return string
      */
     public function getSignatureValue()
     {
-        return $this->sequence->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0]->getBinaryContent();
+        return bin2hex(
+            $this->sequence->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0]->getBinaryContent()
+        );
     }
     
     /**
      * Content type OID
      * @return ASN1\Universal\ObjectIdentifier
      */
-    public function getContentType()
+    private function getContentType()
     {
         $contentType = $this->getSignedAttributes()->findByOid(self::OID_CONTENT_TYPE);
         if (!empty($contentType)) {
@@ -86,14 +88,19 @@ class SignerInfo
     }
 
     /**
-     * Signature digest
-     * @return ASN1\Universal\OctetString
+     * Signature hex digest
+     * @return string
      */
     public function getMessageDigest()
     {
         $messageDigest = $this->getSignedAttributes()->findByOid(self::OID_MESSAGE_DIGEST);
         if (!empty($messageDigest)) {
-            return $messageDigest[0]->getSiblings()[0]->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0];
+            $digest = (string) $messageDigest[0]
+                ->getSiblings()[0]
+                ->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0];
+
+
+            return bin2hex($digest);
         }
         
         return null;
@@ -103,7 +110,7 @@ class SignerInfo
      * Signing cert
      * @return ASN1\Universal\Set
      */
-    public function getSigningCert()
+    private function getSigningCert()
     {
         $signingCert = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_CERTIFICATE_V2);
         if ($signingCert) {
@@ -114,23 +121,24 @@ class SignerInfo
     }
 
     /**
-     * Signing cert digest
+     * Signing cert hex digest
      * @return string
      */
-    public function getSigningCertDigestValue()
+    public function getSigningCertDigest()
     {
-        return $this->getSigningCert()
+        $digest = (string) $this->getSigningCert()
             ->getChildren()[0]
             ->getChildren()[0]
-            ->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0]
-            ->getStringValue();
+            ->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0];
+
+        return bin2hex($digest);
     }
 
     /**
      * Signature Timestamp Attribute
      * @return ASN1\Object|null
      */
-    public function getTimeStampToken()
+    private function getTimeStampToken()
     {
         $attributes = $this->getUnsignedAttributes();
         if ($attributes) {
@@ -139,6 +147,7 @@ class SignerInfo
                 return $ts[0]->getSiblings()[0]->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[0];
             }
         }
+
         return null;
     }
 
@@ -146,7 +155,7 @@ class SignerInfo
      * Esc-Timestamp Attribute
      * @return ASN1\Object|null
      */
-    public function getEscTimeStampToken()
+    private function getEscTimeStampToken()
     {
         $attributes = $this->getUnsignedAttributes();
         if ($attributes) {
@@ -155,6 +164,7 @@ class SignerInfo
                 return $ts[0]->getSiblings()[0]->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[0];
             }
         }
+
         return null;
     }
 
@@ -162,7 +172,7 @@ class SignerInfo
      * Has evidences in signature
      * @return bool
      */
-    public function hasEvidences()
+    private function hasEvidences()
     {
         $unsignedAttributes = $this->getUnsignedAttributes();
         if ($unsignedAttributes) {
@@ -223,10 +233,9 @@ class SignerInfo
      */
     public function getPublicKeyAlgorithm()
     {
-        return $this->sequence
+        return (string) $this->sequence
             ->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[2]
-            ->getChildren()[0]
-            ->getStringValue();
+            ->getChildren()[0];
     }
 
     /**
@@ -235,10 +244,17 @@ class SignerInfo
      */
     public function getDigestAlgorithm()
     {
-        return $this->sequence
+        return (string) $this->sequence
             ->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[1]
-            ->getChildren()[0]
-            ->getStringValue();
+            ->getChildren()[0];
+    }
+
+    /**
+     * @return string
+     */
+    public function getBinary(): string
+    {
+        return $this->sequence->getBinary();
     }
 
     /**

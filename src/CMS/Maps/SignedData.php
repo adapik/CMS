@@ -58,6 +58,12 @@ class SignedData
                 'max' => -1,
                 'children' => CertificateList::MAP
             ],
+            'signerInfos' => [
+                'type'    => Identifier::SET,
+                'min' => 0,
+                'max' => -1,
+                'children' => SignerInfo::MAP
+            ],
         ]
     ];
 }

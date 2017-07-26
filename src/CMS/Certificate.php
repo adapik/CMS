@@ -2,6 +2,7 @@
 
 namespace Adapik\CMS;
 
+use Adapik\CMS\Exception\FormatException;
 use FG\ASN1;
 use FG\ASN1\Universal\Sequence;
 
@@ -196,12 +197,18 @@ class Certificate
      *
      * @param $content
      *
-     * @return Certificate
+     * @return self
+     *
+     * @throws FormatException
      */
     public static function createFromContent($content)
     {
-        /** @var \FG\ASN1\Universal\Sequence $sequence */
         $sequence = ASN1\ASN1Object::fromFile($content);
+
+        if (!$sequence instanceof Sequence) {
+            throw new FormatException('SignedData must be type of Sequence');
+        }
+
         return new self($sequence);
     }
 }

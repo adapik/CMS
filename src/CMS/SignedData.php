@@ -2,6 +2,7 @@
 
 namespace Adapik\CMS;
 
+use Adapik\CMS\Exception\FormatException;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\NullObject;
 use FG\ASN1\Universal\Sequence;
@@ -142,11 +143,17 @@ class SignedData
      * @param $content
      *
      * @return SignedData
+     *
+     * @throws FormatException
      */
     public static function createFromContent($content)
     {
-        /** @var \FG\ASN1\Universal\Sequence $sequence */
-        $sequence   = ASN1\ASN1Object::fromFile($content);
+        $sequence = ASN1\ASN1Object::fromFile($content);
+
+        if (!$sequence instanceof Sequence) {
+            throw new FormatException('SignedData must be type of Sequence');
+        }
+
         return new self($sequence);
     }
 }

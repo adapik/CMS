@@ -3,6 +3,7 @@
 namespace Adapik\Test\CMS;
 
 use Adapik\CMS\Certificate;
+use Adapik\CMS\Exception\FormatException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,6 +34,18 @@ class CertificateTest extends TestCase
     {
         $this->userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_user.crt'));
         $this->caCert   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_ca.crt'));
+    }
+
+    public function testCreate()
+    {
+        $signedData = Certificate::createFromContent($this->userCert);
+        $this->assertInstanceOf(Certificate::class, $signedData);
+    }
+
+    public function testCreateMalformed()
+    {
+        $this->expectException(FormatException::class);
+        Certificate::createFromContent(base64_decode(123, true));
     }
 
     public function testParseCert()

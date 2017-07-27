@@ -5,6 +5,7 @@ namespace CMS;
 use Adapik\CMS\Certificate;
 use Adapik\CMS\SignedData;
 use Adapik\CMS\SignerInfo;
+use Adapik\CMS\Exception\FormatException;
 use PHPUnit\Framework\TestCase;
 
 class SignedDataTest extends TestCase
@@ -13,6 +14,12 @@ class SignedDataTest extends TestCase
     {
         $signedData = SignedData::createFromContent($this->getAttached());
         $this->assertInstanceOf(SignedData::class, $signedData);
+    }
+
+    public function testCreateMalformed()
+    {
+        $this->expectException(FormatException::class);
+        SignedData::createFromContent(base64_decode(123, true));
     }
 
     public function testGetSignerInfo()

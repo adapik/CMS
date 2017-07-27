@@ -154,6 +154,12 @@ class SignedData
             throw new FormatException('SignedData must be type of Sequence');
         }
 
+        $map = (new Mapper())->map($sequence, \Adapik\CMS\Maps\SignedData::MAP);
+
+        if ($map === null) {
+            throw new FormatException('SignedData invalid format');
+        }
+
         return new self($sequence);
     }
 }

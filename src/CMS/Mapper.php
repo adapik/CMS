@@ -15,7 +15,7 @@ class Mapper
         }
 
         if ($mapping['type'] === Identifier::ANY) {
-            return (string) $object;
+            return $object;
         }
 
         if ($mapping['type'] === Identifier::CHOICE) {
@@ -34,7 +34,7 @@ class Mapper
             return $this->mapSetObject($object, $mapping);
         }
 
-        return (string) $object;
+        return $object;
     }
 
     private function isTaggedObject(array $mapping)

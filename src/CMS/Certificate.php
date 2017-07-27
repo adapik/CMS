@@ -209,6 +209,12 @@ class Certificate
             throw new FormatException('SignedData must be type of Sequence');
         }
 
+        $map = (new Mapper())->map($sequence, \Adapik\CMS\Maps\Certificate::MAP);
+
+        if ($map === null) {
+            throw new FormatException('Certificate invalid format');
+        }
+
         return new self($sequence);
     }
 }

@@ -88,17 +88,17 @@ class Mapper
             $currentMapping = reset($mapping['children']);
             $currentKey     = key($mapping['children']);
             $matched        = $this->map($currentChild, $currentMapping);
-            if ($matched) {
-                $map[$currentKey] = $matched = $this->map($currentChild, $currentMapping);
+            if (null !== $matched) {
+                $map[$currentKey] = $matched;
                 array_shift($mapping['children']);
             }
 
-            while (!$matched && array_key_exists('optional', $currentMapping) && $currentMapping['optional'] === true) {
+            while (null === $matched && array_key_exists('optional', $currentMapping) && $currentMapping['optional'] === true) {
                 array_shift($mapping['children']);
                 $currentMapping = reset($mapping['children']);
                 $currentKey     = key($mapping['children']);
                 $matched        = $this->map($currentChild, $currentMapping);
-                if ($matched) {
+                if (null !== $matched) {
                     $map[$currentKey] = $matched = $this->map($currentChild, $currentMapping);
                     array_shift($mapping['children']);
                     break;

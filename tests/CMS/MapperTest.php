@@ -10,6 +10,9 @@ namespace Adapik\Test\CMS;
 
 use Adapik\CMS\Mapper;
 use Adapik\CMS\Maps\Certificate;
+use Adapik\CMS\Maps\CMS;
+use Adapik\CMS\Maps\SignedData;
+use Adapik\CMS\Maps\SignedDataContent;
 use Adapik\CMS\Maps\SignerInfo;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Identifier;
@@ -334,7 +337,7 @@ class MapperTest extends TestCase
     {
         //$this->markTestIncomplete();
         $map = Certificate::MAP;
-        $userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/phpnet.crt'));
+        $userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_user.crt'));
         $sequence = \FG\ASN1\ASN1Object::fromFile($userCert);
         $mappedObject = (new Mapper())->map($sequence, $map);
         $this->assertNotNull($mappedObject);
@@ -345,6 +348,16 @@ class MapperTest extends TestCase
         //$this->markTestIncomplete();
         $map = SignerInfo::MAP;
         $signerInfo = base64_decode(file_get_contents(__DIR__ . '/../fixtures/signer_info_cades_bes'));
+        $sequence = \FG\ASN1\ASN1Object::fromFile($signerInfo);
+        $mappedObject = (new Mapper())->map($sequence, $map);
+        $this->assertNotNull($mappedObject);
+    }
+
+    public function testMapSignedData()
+    {
+        //$this->markTestIncomplete();
+        $map = SignedData::MAP;
+        $signerInfo = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cms_attached_chain.sig'));
         $sequence = \FG\ASN1\ASN1Object::fromFile($signerInfo);
         $mappedObject = (new Mapper())->map($sequence, $map);
         $this->assertNotNull($mappedObject);

@@ -4,6 +4,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use FG\ASN1\ExplicitlyTaggedObject;
+use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\NullObject;
 use FG\ASN1\Universal\Sequence;
 use FG\ASN1\Universal\Set;
@@ -152,6 +153,12 @@ class SignedData
 
         if (!$sequence instanceof Sequence) {
             throw new FormatException('SignedData must be type of Sequence');
+        }
+
+        $map = (new Mapper())->map($sequence, Maps\SignedData::MAP);
+
+        if ($map === null) {
+            throw new FormatException('SignedData invalid format');
         }
 
         return new self($sequence);

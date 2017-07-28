@@ -4,6 +4,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use FG\ASN1;
+use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -209,7 +210,7 @@ class Certificate
             throw new FormatException('SignedData must be type of Sequence');
         }
 
-        $map = (new Mapper())->map($sequence, \Adapik\CMS\Maps\Certificate::MAP);
+        $map = (new Mapper())->map($sequence, Maps\Certificate::MAP);
 
         if ($map === null) {
             throw new FormatException('Certificate invalid format');

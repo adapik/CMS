@@ -40,4 +40,21 @@ class Name
 
         return implode('; ', $string);
     }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $array = [];
+
+        foreach ($this->sequence->getChildren() as $set) {
+            $sequence    = $set->getChildren()[0];
+            $oid         = (string) $sequence->getChildren()[0];
+            $value       = (string) $sequence->getChildren()[1];
+            $array[$oid] = $value;
+        }
+
+        return $array;
+    }
 }

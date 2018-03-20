@@ -174,12 +174,7 @@ class Certificate
     {
         $policies = $this->getExtension(self::OID_EXTENSION_CERT_POLICIES);
 
-        if (!$policies instanceof Sequence) {
-            return [];
-        }
-
         $oids = array_map(function(Sequence $policy) {
-
             return (string) $policy->getChildren()[0];
         }, $policies->getChildren());
 

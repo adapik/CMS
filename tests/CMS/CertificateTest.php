@@ -114,6 +114,15 @@ class CertificateTest extends TestCase
         $this->assertTrue($cert->isCa());
     }
 
+    public function testGetPolicies()
+    {
+        $cert = Certificate::createFromContent($this->caCert);
+        $this->assertSame([
+            '1.3.6.1.4.1.6449.1.2.2.26',
+            '2.23.140.1.2.1'
+        ], $cert->getCertPolicies());
+    }
+
     public function testGetBinary()
     {
         $cert = Certificate::createFromContent($this->caCert);

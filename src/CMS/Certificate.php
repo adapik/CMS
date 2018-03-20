@@ -17,6 +17,7 @@ class Certificate
     const OID_EXTENSION_AUTHORITY_KEY_ID      = '2.5.29.35';
     const OID_EXTENSION_AUTHORITY_INFO_ACCESS = '1.3.6.1.5.5.7.1.1';
     const OID_OCSP_URI                        = '1.3.6.1.5.5.7.48.1';
+    const OID_EXTENSION_CERT_POLICIES         = '2.5.29.32';
 
     /**
      * @var Sequence
@@ -167,6 +168,22 @@ class Certificate
     public function getSubject()
     {
         return new Name($this->getTBSCertificate()->getChildren()[5]);
+    }
+
+    public function getCertPolicies()
+    {
+        $policies = $this->getExtension(self::OID_EXTENSION_CERT_POLICIES);
+
+        if (!$policies instanceof Sequence) {
+            return [];
+        }
+
+        $oids = array_map(function(Sequence $policy) {
+
+            return (string) $policy->getChildren()[0];
+        }, $policies->getChildren());
+
+        return $oids;
     }
 
     /**

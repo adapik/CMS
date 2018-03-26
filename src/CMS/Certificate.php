@@ -5,6 +5,7 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use FG\ASN1;
 use FG\ASN1\Mapper\Mapper;
+use FG\ASN1\Universal\ObjectIdentifier;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -18,6 +19,8 @@ class Certificate
     const OID_EXTENSION_AUTHORITY_INFO_ACCESS = '1.3.6.1.5.5.7.1.1';
     const OID_OCSP_URI                        = '1.3.6.1.5.5.7.48.1';
     const OID_EXTENSION_CERT_POLICIES         = '2.5.29.32';
+    const OID_EXTENSION_KEY_USAGE             = '2.5.29.15';
+    const OID_EXTENSION_EXTENDED_KEY_USAGE    = '2.5.29.37';
 
     /**
      * @var Sequence
@@ -170,6 +173,9 @@ class Certificate
         return new Name($this->getTBSCertificate()->getChildren()[5]);
     }
 
+    /**
+     * @return string[]
+     */
     public function getCertPolicies()
     {
         $policies = $this->getExtension(self::OID_EXTENSION_CERT_POLICIES);
@@ -183,6 +189,20 @@ class Certificate
         }, $policies->getChildren());
 
         return $oids;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getExtendedKeyUsage()
+    {
+        $extKeyUsageSyntax = $this->getExtension(self::OID_EXTENSION_EXTENDED_KEY_USAGE);
+
+        if ($extKeyUsageSyntax === null) {
+            return [];
+        }
+
+        return array_map('strval', $extKeyUsageSyntax->getChildren());
     }
 
     /**

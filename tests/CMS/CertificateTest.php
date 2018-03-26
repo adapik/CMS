@@ -30,10 +30,16 @@ class CertificateTest extends TestCase
      */
     private $caCert;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_user.crt'));
         $this->caCert   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_ca.crt'));
+    }
+
+    protected function tearDown()
+    {
+        $this->userCert = null;
+        $this->caCert   = null;
     }
 
     public function testCreate()
@@ -119,8 +125,17 @@ class CertificateTest extends TestCase
         $cert = Certificate::createFromContent($this->caCert);
         $this->assertSame([
             '1.3.6.1.4.1.6449.1.2.2.26',
-            '2.23.140.1.2.1'
+            '2.23.140.1.2.1',
         ], $cert->getCertPolicies());
+    }
+
+    public function testGetExtendedKeyUsage()
+    {
+        $cert = Certificate::createFromContent($this->caCert);
+        $this->assertSame([
+            '1.3.6.1.5.5.7.3.1',
+            '1.3.6.1.5.5.7.3.2',
+        ], $cert->getExtendedKeyUsage());
     }
 
     public function testGetBinary()

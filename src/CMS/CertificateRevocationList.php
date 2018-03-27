@@ -67,7 +67,7 @@ class CertificateRevocationList
 
     public function getSerialNumbers()
     {
-        $revokedCerts = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[2];
+        $revokedCerts = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[2] ?? [];
 
         $numbers = array_map(function(Sequence $revokedCert) {
             return gmp_strval((string) $revokedCert->getChildren()[0], 16);

@@ -9,6 +9,17 @@ use FG\ASN1\Identifier;
  */
 class SignerInfo
 {
+    /**
+     * SignerInfo ::= SEQUENCE {
+     *      version                 CMSVersion,
+     *      sid                     SignerIdentifier,
+     *      digestAlgorithm         DigestAlgorithmIdentifier,
+     *      signedAttrs         [0] IMPLICIT SignedAttributes OPTIONAL,
+     *      signatureAlgorithm      SignatureAlgorithmIdentifier,
+     *      signature               SignatureValue,
+     *      unsignedAttrs [1]       IMPLICIT UnsignedAttributes OPTIONAL
+     * }
+     */
     const MAP = [
         'type'     => Identifier::SEQUENCE,
         'children' => [

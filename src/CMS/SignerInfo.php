@@ -2,11 +2,20 @@
 
 namespace Adapik\CMS;
 
+use Adapik\CMS\Exception\FormatException;
+use Exception;
 use FG\ASN1;
+use FG\ASN1\ExplicitlyTaggedObject;
+use FG\ASN1\Universal\ObjectIdentifier;
+use FG\ASN1\Universal\OctetString;
 use FG\ASN1\Universal\Sequence;
+use FG\ASN1\Universal\Set;
 
 /**
- * SignerInfo
+ * Class SignerInfo
+ *
+ * @see     Maps\SignerInfo
+ * @package Adapik\CMS
  */
 class SignerInfo
 {
@@ -36,11 +45,12 @@ class SignerInfo
 
     /**
      * Unsigned Attributes
-     * @return \FG\ASN1\ExplicitlyTaggedObject
+     * @return ExplicitlyTaggedObject
+     * @throws Exception
      */
     public function getUnsignedAttributes()
     {
-        $exTaggedObjects = $this->sequence->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
+        $exTaggedObjects = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
         $attributes      = array_filter($exTaggedObjects, function ($value) {
             return $value->getIdentifier()->getTagNumber() === 1;
         });
@@ -50,11 +60,12 @@ class SignerInfo
 
     /**
      * Signed Attributes
-     * @return \FG\ASN1\ExplicitlyTaggedObject
+     * @return ExplicitlyTaggedObject
+     * @throws Exception
      */
     public function getSignedAttributes()
     {
-        $exTaggedObjects = $this->sequence->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
+        $exTaggedObjects = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
         $attributes      = array_filter($exTaggedObjects, function ($value) {
             return $value->getIdentifier()->getTagNumber() === 0;
         });
@@ -65,23 +76,33 @@ class SignerInfo
     /**
      * Signature as as a hex string
      * @return string
+     * @throws Exception
      */
     public function getSignatureValue()
     {
         return bin2hex(
-            $this->sequence->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0]->getBinaryContent()
+            $this->sequence->findChildrenByType(OctetString::class)[0]->getBinaryContent()
         );
     }
-    
+
+    /**
+     * @return OctetString
+     * @throws Exception
+     */
+    public function getSignature() {
+        return $this->sequence->findChildrenByType(OctetString::class)[0];
+    }
+
     /**
      * Content type OID
-     * @return ASN1\Universal\ObjectIdentifier
+     * @return ObjectIdentifier
+     * @throws Exception
      */
     private function getContentType()
     {
         $contentType = $this->getSignedAttributes()->findByOid(self::OID_CONTENT_TYPE);
         if (!empty($contentType)) {
-            return $contentType[0]->getSiblings()[0]->findChildrenByType(\FG\ASN1\Universal\ObjectIdentifier::class)[0];
+            return $contentType[0]->getSiblings()[0]->findChildrenByType(ObjectIdentifier::class)[0];
         }
         
         return null;
@@ -90,6 +111,7 @@ class SignerInfo
     /**
      * Signature hex digest
      * @return string
+     * @throws Exception
      */
     public function getMessageDigest()
     {
@@ -97,7 +119,7 @@ class SignerInfo
         if (!empty($messageDigest)) {
             $digest = (string) $messageDigest[0]
                 ->getSiblings()[0]
-                ->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0];
+                ->findChildrenByType(OctetString::class)[0];
 
 
             return bin2hex($digest);
@@ -109,12 +131,13 @@ class SignerInfo
     /**
      * Signing cert
      * @return ASN1\Universal\Set
+     * @throws Exception
      */
     private function getSigningCert()
     {
         $signingCert = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_CERTIFICATE_V2);
         if ($signingCert) {
-            return $signingCert[0]->getSiblings()[0]->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[0];
+            return $signingCert[0]->getSiblings()[0]->findChildrenByType(Sequence::class)[0];
         }
         
         return null;
@@ -123,13 +146,14 @@ class SignerInfo
     /**
      * Signing cert hex digest
      * @return string
+     * @throws Exception
      */
     public function getSigningCertDigest()
     {
         $digest = (string) $this->getSigningCert()
             ->getChildren()[0]
             ->getChildren()[0]
-            ->findChildrenByType(\FG\ASN1\Universal\OctetString::class)[0];
+            ->findChildrenByType(OctetString::class)[0];
 
         return bin2hex($digest);
     }
@@ -137,14 +161,15 @@ class SignerInfo
     /**
      * Signature Timestamp Attribute
      * @return ASN1\Object|null
+     * @throws Exception
      */
     private function getTimeStampToken()
     {
         $attributes = $this->getUnsignedAttributes();
         if ($attributes) {
-            $ts = $this->getUnsignedAttributes()->findByOid(TimeStampSignature::getOid());
+            $ts = $this->getUnsignedAttributes()->findByOid(TimeStampToken::getOid());
             if ($ts) {
-                return $ts[0]->getSiblings()[0]->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[0];
+                return $ts[0]->getSiblings()[0]->findChildrenByType(Sequence::class)[0];
             }
         }
 
@@ -154,6 +179,7 @@ class SignerInfo
     /**
      * Esc-Timestamp Attribute
      * @return ASN1\Object|null
+     * @throws Exception
      */
     private function getEscTimeStampToken()
     {
@@ -161,7 +187,7 @@ class SignerInfo
         if ($attributes) {
             $ts = $attributes->findByOid(EscTimeStamp::getOid());
             if ($ts) {
-                return $ts[0]->getSiblings()[0]->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[0];
+                return $ts[0]->getSiblings()[0]->findChildrenByType(Sequence::class)[0];
             }
         }
 
@@ -171,6 +197,7 @@ class SignerInfo
     /**
      * Has evidences in signature
      * @return bool
+     * @throws Exception
      */
     private function hasEvidences()
     {
@@ -191,6 +218,7 @@ class SignerInfo
     /**
      * Is CAdES-BES
      * @return bool
+     * @throws Exception
      */
     private function isBES()
     {
@@ -204,6 +232,7 @@ class SignerInfo
     /**
      * Is CAdES-T
      * @return bool
+     * @throws Exception
      */
     private function isT()
     {
@@ -217,6 +246,7 @@ class SignerInfo
     /**
      * Is CAdES-X Long Type 1
      * @return bool
+     * @throws Exception
      */
     private function isLongType1()
     {
@@ -230,22 +260,24 @@ class SignerInfo
     /**
      * Sign algo (oid)
      * @return string
+     * @throws Exception
      */
     public function getPublicKeyAlgorithm()
     {
         return (string) $this->sequence
-            ->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[2]
+            ->findChildrenByType(Sequence::class)[2]
             ->getChildren()[0];
     }
 
     /**
      * Hash algo (oid)
      * @return string
+     * @throws Exception
      */
     public function getDigestAlgorithm()
     {
         return (string) $this->sequence
-            ->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[1]
+            ->findChildrenByType(Sequence::class)[1]
             ->getChildren()[0];
     }
 
@@ -260,6 +292,7 @@ class SignerInfo
     /**
      * Define sign format
      * @return string
+     * @throws Exception
      */
     public function defineType()
     {
@@ -276,5 +309,122 @@ class SignerInfo
         }
         
         return self::TYPE_CMS;
+    }
+
+    /**
+     * Sometimes having Cryptographic Message Syntax (CMS) we need to store OCSP check response for the
+     * signer certificate, otherwise CMS data means nothing.
+     *
+     * @param BasicOCSPResponse[] $basicOCSPResponses
+     * @return bool
+     * @throws Exception
+     */
+    public function addUnsignedRevocationValues(array $basicOCSPResponses)
+    {
+        /**
+         * 1. First check do we have unsignedAttrs or not, cause it is optional fields and create it if not.
+         * Always push it to the end of child.
+         */
+        $UnsignedAttribute = $this->getUnsignedAttributes();
+
+        $unsignedSelfCreated = false;
+
+        if (is_null($UnsignedAttribute)) {
+            $UnsignedAttribute = $this->createUnsignedAttribute();
+            $unsignedSelfCreated = true;
+            $this->sequence->appendChild($UnsignedAttribute);
+        }
+
+        $UnsignedAttribute = $this->getUnsignedAttributes();
+
+        /**
+         * 2. Now check do we have to check existence of  1.2.840.113549.1.9.16.2.24 in attributes
+         */
+        if (count($UnsignedAttribute->findByOid(RevocationValues::getOid())) > 0) {
+            throw new Exception("You already have RevocationValues in UnsignedAttributes");
+        }
+
+        /**
+         * 3. Now if we don't have, lets create RevocationValues object
+         */
+        $responses = [];
+        foreach ($basicOCSPResponses as $basicOCSPResponse) {
+            $binary = $basicOCSPResponse->getBinary();
+            $responses[] = ASN1\ASN1Object::fromBinary($binary);
+        }
+
+        $revocationValues = Sequence::create([
+            ObjectIdentifier::create(RevocationValues::getOid()),
+            Set::create([
+                Sequence::create([
+                    ExplicitlyTaggedObject::create(1, Sequence::create($responses))
+                ])
+            ])
+        ]);
+
+        /**
+         * 4. Finally insert it into $UnsignedAttribute.
+         */
+        if ($unsignedSelfCreated) {
+            $UnsignedAttribute->replaceChild(0, $revocationValues);
+        } else {
+            $UnsignedAttribute->appendChild($revocationValues);
+        }
+
+        return true;
+    }
+
+    /**
+     * @return ASN1\ImplicitlyTaggedObject
+     */
+    private function createUnsignedAttribute()
+    {
+        return ExplicitlyTaggedObject::create(1, ASN1\Universal\NullObject::create());
+    }
+
+    /**
+     * @return TimeStampToken|null
+     * @throws FormatException
+     */
+    public function getUnsignedTimeStampToken()
+    {
+        $attributes = $this->getUnsignedAttributes();
+
+        if ($attributes) {
+            $rv = $attributes->findByOid(TimeStampToken::getOid());
+
+            if ($rv) {
+                return TimeStampToken::createFromContent($rv[0]->getParent()->getBinary());
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return RevocationValues[]|null
+     * @throws Exception|FormatException
+     */
+    public function getUnsignedRevocationValues()
+    {
+        $attributes = $this->getUnsignedAttributes();
+        $values = [];
+        if ($attributes) {
+            $rv = $attributes->findByOid(RevocationValues::getOid());
+
+            if ($rv) {
+                /** @var Set $set */
+                $set = $rv[0]->getParent()->findChildrenByType(Set::class)[0];
+
+                /** @var Sequence $child */
+                foreach ($set->getChildren() as $child) {
+                    $content = $child->getBinary();
+                    $values[] = RevocationValues::createFromContent($content);
+                }
+                return $values;
+            }
+        }
+
+        return [];
     }
 }

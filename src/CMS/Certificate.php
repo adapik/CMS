@@ -5,7 +5,7 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use FG\ASN1;
 use FG\ASN1\Mapper\Mapper;
-use FG\ASN1\Universal\ObjectIdentifier;
+use FG\ASN1\Universal\BitString;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -253,5 +253,37 @@ class Certificate
         }
 
         return new self($sequence);
+    }
+
+    /**
+     * Basically used in OCSP requests and responses
+     *
+     * @param string $algorithmOID
+     *
+     * @return string
+     * @throws FormatException
+     */
+    public function getNameHash(string $algorithmOID)
+    {
+        // TODO: recheck
+        return Algorithm::hashValue($algorithmOID, $this->getTBSCertificate()->getChildren()[5]->getBinary());
+    }
+
+    /**
+     * Basically used in OCSP requests and responses
+     *
+     * @param string $algorithmOID
+     *
+     * @return string
+     * @throws FormatException
+     */
+    public function getKeyHash(string $algorithmOID)
+    {
+        // TODO: recheck
+        $child = $this->getTBSCertificate()->getChildren()[6];
+        /** @var BitString $octet */
+        $octet = $child->findChildrenByType(ASN1\Universal\BitString::class)[0];
+
+        return Algorithm::hashValue($algorithmOID, hex2bin($octet->getStringValue()));
     }
 }

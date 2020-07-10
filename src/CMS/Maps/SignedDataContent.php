@@ -9,6 +9,16 @@ use FG\ASN1\Identifier;
  */
 class SignedDataContent
 {
+    /**
+     * SignedData ::= SEQUENCE {
+     *      version CMSVersion,
+     *      digestAlgorithms DigestAlgorithmIdentifiers,
+     *      encapContentInfo EncapsulatedContentInfo,
+     *      certificates [0] IMPLICIT CertificateSet OPTIONAL,
+     *      crls [1] IMPLICIT RevocationInfoChoices OPTIONAL,
+     *      signerInfos SignerInfos
+     * }
+     */
     const MAP = [
         'type'     => Identifier::SEQUENCE,
         'children' => [
@@ -25,18 +35,7 @@ class SignedDataContent
                 'max' => -1,
                 'children' => AlgorithmIdentifier::MAP
             ],
-            'encapsulatedContentInfo' => [
-                'type' => Identifier::SEQUENCE,
-                'children' => [
-                    'contentType' => ['type' => Identifier::OBJECT_IDENTIFIER],
-                    'eContent' => [
-                        'constant' => 0,
-                        'explicit' => true,
-                        'optional' => true,
-                        'type' => Identifier::OCTETSTRING
-                    ]
-                ]
-            ],
+            'encapsulatedContentInfo' => EncapsulatedContentInfo::MAP,
             'certificates' => [
                 'implicit' => true,
                 'optional' => true,

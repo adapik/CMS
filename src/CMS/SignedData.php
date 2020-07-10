@@ -3,16 +3,19 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Exception;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\NullObject;
 use FG\ASN1\Universal\Sequence;
-use FG\ASN1\Universal\Set;
 use FG\ASN1\Universal\OctetString;
 use FG\ASN1;
 
 /**
- * SignedData
+ * Class SignedData
+ *
+ * @see     Maps\SignedData
+ * @package Adapik\CMS
  */
 class SignedData
 {
@@ -33,58 +36,38 @@ class SignedData
 
     /**
      * Message content
-     * @return ExplicitlyTaggedObject
-     * @throws \Exception
+     * @return SignedDataContent
+     * @throws Exception
      */
     public function getSignedDataContent()
     {
-        return $this->sequence->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class)[0];
+        $SignedDataContent = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class)[0];
+
+        return new SignedDataContent($SignedDataContent->getChildren()[0]);
     }
 
     /**
      * SignerInfo of this message
      * @return SignerInfo[]
+     * @throws Exception
+     * @deprecated
+     * @see SignedDataContent::getSignerInfoSet()
      */
     public function getSignerInfo(): array
     {
-        /** @var Set $signerInfoSet */
-        $signerInfoSet = $this->getSignedDataContent()
-            ->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[0]
-            ->findChildrenByType(\FG\ASN1\Universal\Set::class)[1];
-
-        $signerInfoObjects = [];
-        foreach ($signerInfoSet->getChildren() as $child) {
-            /** @var Sequence $child */
-            $signerInfoObjects[] = new SignerInfo($child);
-        }
-        return $signerInfoObjects;
+        return $this->getSignedDataContent()->getSignerInfoSet();
     }
 
     /**
      * Certificates of this message
+     * @deprecated
+     * @see SignedDataContent::getCertificateSet()
      * @return Certificate[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function extractCertificates(): array
     {
-        $fields = $this->getSignedDataContent()
-            ->getChildren()[0]
-            ->findChildrenByType(\FG\ASN1\ExplicitlyTaggedObject::class);
-        $certificates = array_filter($fields, function(ASN1\ASN1Object $field) {
-            return $field->getIdentifier()->getTagNumber() === 0;
-        });
-
-        if ($certificates) {
-            $certificates = array_pop($certificates);
-            $certs = $certificates->getChildren();
-            foreach ($certs as $cert) {
-                /** @var Sequence $cert */
-                $x509Certs[] = new Certificate($cert);
-            }
-            return $x509Certs ?? [];
-        }
-
-        return [];
+        return $this->getSignedDataContent()->getCertificateSet();
     }
 
     /**
@@ -162,5 +145,22 @@ class SignedData
         }
 
         return new self($sequence);
+    }
+
+    /**
+     * Removing content if exist in case of necessity.
+     * Actually we sign content hash and storing content not always strict.
+     * Moreover content can be very huge and heavy
+     */
+    public function removeEncapsulatedContentInfoEContent() {
+        $data = $this->sequence->findByOid(self::OID_DATA);
+        $content = $data[0];
+
+        $siblings = $content->getSiblings();
+        if (count($siblings) > 0) {
+            $siblings[0]->remove();
+        }
+
+        return;
     }
 }

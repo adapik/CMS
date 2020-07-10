@@ -129,5 +129,4 @@ class SingleResponse
         }
         return null;
     }
-
 }

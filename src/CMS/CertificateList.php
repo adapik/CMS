@@ -60,5 +60,4 @@ class CertificateList
 
         return new self($sequence);
     }
-
 }

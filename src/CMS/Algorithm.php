@@ -32,34 +32,35 @@ class Algorithm
      * @param string $algorithmOID
      * @param string $value
      *
+     * @param bool $raw
      * @return string
      * @throws FormatException
      */
-    public static function hashValue(string $algorithmOID, string $value)
+    public static function hashValue(string $algorithmOID, string $value, bool $raw = true)
     {
         switch ($algorithmOID) {
             case self::OID_MD2:
-                return hash('md2', $value, true);
+                return hash('md2', $value, $raw);
             case self::OID_MD4:
-                return hash('md4', $value, true);
+                return hash('md4', $value, $raw);
             case self::OID_MD5:
-                return hash('md5', $value, true);
+                return hash('md5', $value, $raw);
             case self::OID_SHA1:
-                return hash('sha1', $value, true);
+                return hash('sha1', $value, $raw);
             case self::OID_SHA256:
-                return hash('sha256', $value, true);
+                return hash('sha256', $value, $raw);
             case self::OID_SHA384:
-                return hash('sha384', $value, true);
+                return hash('sha384', $value, $raw);
             case self::OID_SHA512:
-                return hash('sha512', $value, true);
+                return hash('sha512', $value, $raw);
             case self::OID_SHA224:
-                return hash('sha224', $value, true);
+                return hash('sha224', $value, $raw);
             case self::OID_RIPEMD160:
-                return hash('ripemd160', $value, true);
+                return hash('ripemd160', $value, $raw);
             case self::OID_RIPEMD128:
-                return hash('ripemd128', $value, true);
+                return hash('ripemd128', $value, $raw);
             case self::OID_RIPEMD256:
-                return hash('ripemd256', $value, true);
+                return hash('ripemd256', $value, $raw);
             default:
                 throw new FormatException('Unknown hash algorithm');
         }

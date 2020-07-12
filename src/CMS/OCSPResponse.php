@@ -21,48 +21,24 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\OCSPResponse
  * @package Adapik\CMS
  */
-class OCSPResponse
+class OCSPResponse extends CMSBase
 {
     const CONTENT_TYPE = 'application/ocsp-response';
     const OID_OCSP_BASIC = "1.3.6.1.5.5.7.48.1.1";
     /**
      * @var Sequence
      */
-    private $sequence;
+    protected $object;
 
     /**
-     * OCSPResponse constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
-
-    /**
-     * @param $content
-     *
+     * @param string $content
      * @return OCSPResponse
      * @throws FormatException
      */
-    public static function createFromContent($content)
+    public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('OCSPResponse must be type of Sequence');
-        }
-
-        $map = (new Mapper())->map($sequence, Maps\OCSPResponse::MAP);
-
-        if ($map === null) {
-            throw new FormatException('OCSPResponse invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\OCSPResponse::class, Sequence::class));
     }
-
 
     /**
      * @return ResponseBytes|null
@@ -70,7 +46,7 @@ class OCSPResponse
      */
     public function getResponseBytes()
     {
-        $children = $this->sequence->getChildren();
+        $children = $this->object->getChildren();
 
         if (count($children) == 2) {
             return ResponseBytes::createFromContent($children[1]->getBinaryContent());
@@ -85,7 +61,7 @@ class OCSPResponse
      */
     public function getResponseStatus()
     {
-        $enum = $this->sequence->getChildren()[0];
+        $enum = $this->object->getChildren()[0];
 
         return OCSPResponseStatus::createFromContent($enum->getBinary());
     }

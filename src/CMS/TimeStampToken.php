@@ -12,9 +12,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
-use FG\ASN1\ASN1Object;
 use FG\ASN1\Exception\ParserException;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\NullObject;
 use FG\ASN1\Universal\ObjectIdentifier;
 use FG\ASN1\Universal\Sequence;
@@ -31,36 +29,13 @@ class TimeStampToken extends UnsignedAttribute
     protected static $oid = '1.2.840.113549.1.9.16.2.14';
 
     /**
-     * TimeStampToken constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
-
-    /**
-     * @param $content
-     *
+     * @param string $content
      * @return TimeStampToken
      * @throws FormatException
      */
-    public static function createFromContent($content)
+    public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('TimeStampToken must be type of Sequence');
-        }
-
-        $map = (new Mapper())->map($sequence, Maps\TimeStampToken::MAP);
-
-        if ($map === null) {
-            throw new FormatException('TimeStampToken invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\TimeStampToken::class, Sequence::class));
     }
 
     /**
@@ -101,7 +76,7 @@ class TimeStampToken extends UnsignedAttribute
     public function getSignedData()
     {
         $SignedData = [];
-        $children = $this->sequence->getChildren()[1]->getChildren();
+        $children = $this->object->getChildren()[1]->getChildren();
         foreach ($children as $child) {
             $SignedData[] = SignedData::createFromContent($child->getBinary());
         }

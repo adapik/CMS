@@ -27,47 +27,28 @@ class RevocationValues extends UnsignedAttribute
     /**
      * @var Sequence
      */
-    protected $sequence;
+    protected $object;
 
     protected static $oid = '1.2.840.113549.1.9.16.2.24';
 
     /**
-     * RevocationValues constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
-
-    /**
-     * @param $content
-     *
+     * @param string $content
      * @return RevocationValues
      * @throws FormatException
      */
-    public static function createFromContent($content)
+    public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('RevocationValues must be type of Sequence');
-        }
-
-        $map = (new Mapper())->map($sequence, Maps\RevocationValues::MAP);
-
-        if ($map === null) {
-            throw new FormatException('RevocationValues invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\RevocationValues::class, Sequence::class));
     }
 
+    /**
+     * @return CertificateList[]|null
+     * @throws FormatException
+     */
     public function getCertificateList()
     {
         /** @var ExplicitlyTaggedObject $tagged */
-        $tagged = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
+        $tagged = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
 
         foreach ($tagged as $object) {
             if ($object->getIdentifier()->getTagNumber() == 0) {
@@ -96,7 +77,7 @@ class RevocationValues extends UnsignedAttribute
     public function getBasicOCSPResponses()
     {
         /** @var ExplicitlyTaggedObject $tagged */
-        $tagged = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
+        $tagged = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
 
         foreach ($tagged as $object) {
             if ($object->getIdentifier()->getTagNumber() == 1) {

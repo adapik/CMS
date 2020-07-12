@@ -12,9 +12,8 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
-use FG\ASN1\ASN1Object;
+use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\BitString;
 use FG\ASN1\Universal\OctetString;
 use FG\ASN1\Universal\Sequence;
@@ -25,22 +24,12 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\BasicOCSPResponse
  * @package Adapik\CMS
  */
-class BasicOCSPResponse
+class BasicOCSPResponse extends CMSBase
 {
     /**
      * @var Sequence
      */
-    private $sequence;
-
-    /**
-     * BasicOCSPResponse constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
+    protected $object;
 
     /**
      * @param OctetString $content
@@ -53,33 +42,21 @@ class BasicOCSPResponse
     }
 
     /**
-     * @param $content string
-     *
+     * @param string $content
      * @return BasicOCSPResponse
      * @throws FormatException
      */
     public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence)
-            throw new FormatException('BasicOCSPResponse must be type of Sequence');
-
-        $map = (new Mapper())->map($sequence, Maps\BasicOCSPResponse::MAP);
-
-        if ($map === null) {
-            throw new FormatException('BasicOCSPResponse invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\BasicOCSPResponse::class, Sequence::class));
     }
 
     /**
-     * @return Sequence
+     * @return AlgorithmIdentifier
      */
     public function getSignatureAlgorithm()
     {
-        return $this->sequence->getChildren()[1];
+        return new AlgorithmIdentifier($this->object->getChildren()[1]);
     }
 
     /**
@@ -89,12 +66,12 @@ class BasicOCSPResponse
     public function getCerts()
     {
         /** @var ExplicitlyTaggedObject[] $certs */
-        $certs = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
+        $certs = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         if (count($certs)) {
             $certificates = [];
             /** @var Sequence $child */
             foreach ($certs[0]->getChildren() as $child) {
-                $certificates[] = Certificate::createFromContent($child->getBinaryContent());
+                $certificates[] = new Certificate($child);
             }
 
             return $certificates;
@@ -105,27 +82,21 @@ class BasicOCSPResponse
 
     /**
      * @return ResponseData
-     * @throws FormatException
      */
     public function getTbsResponseData()
     {
-        $tbsResponseData = $this->sequence->getChildren()[0];
+        $tbsResponseData = $this->object->getChildren()[0];
 
-        return ResponseData::createFromContent($tbsResponseData->getBinary());
+        return new ResponseData($tbsResponseData);
     }
 
     /**
      * @return BitString
+     * @throws ParserException
      */
     public function getSignature()
     {
-        return $this->sequence->getChildren()[2];
-    }
-
-    /**
-     * @return string
-     */
-    public function getBinary() {
-        return $this->sequence->getBinary();
+        $binary = $this->object->getChildren()[2]->getBinary();
+        return BitString::fromBinary($binary);
     }
 }

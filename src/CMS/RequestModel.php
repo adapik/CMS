@@ -12,7 +12,7 @@ namespace Adapik\CMS;
 
 use FG\ASN1\ASN1Object;
 
-abstract class RequestModel
+abstract class RequestModel extends CMSBase
 {
     /** @var int $requestTimeout */
     public $requestTimeout = 5;

@@ -13,9 +13,7 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use Exception;
 use FG\ASN1\AbstractTaggedObject;
-use FG\ASN1\ASN1Object;
 use FG\ASN1\ExplicitlyTaggedObject;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\GeneralizedTime;
 use FG\ASN1\Universal\Sequence;
 
@@ -25,43 +23,21 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\SingleResponse
  * @package Adapik\CMS
  */
-class SingleResponse
+class SingleResponse extends CMSBase
 {
     /**
      * @var Sequence
      */
-    private $sequence;
+    protected $object;
 
     /**
-     * SingleResponse constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
-
-    /**
-     * @param $content string
-     *
+     * @param string $content
      * @return SingleResponse
      * @throws FormatException
      */
     public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence)
-            throw new FormatException('SingleResponse must be type of Sequence');
-
-        $map = (new Mapper())->map($sequence, Maps\SingleResponse::MAP);
-
-        if ($map === null) {
-            throw new FormatException('SingleResponse invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\SingleResponse::class, Sequence::class));
     }
 
     /**
@@ -70,7 +46,7 @@ class SingleResponse
      */
     public function getCertID()
     {
-        $certID = $this->sequence->findChildrenByType(Sequence::class)[0];
+        $certID = $this->object->findChildrenByType(Sequence::class)[0];
 
         return CertID::createFromContent($certID->getBinary());
     }
@@ -81,7 +57,7 @@ class SingleResponse
      */
     public function getCertStatus()
     {
-        $certStatus = $this->sequence->findChildrenByType(AbstractTaggedObject::class)[0];
+        $certStatus = $this->object->findChildrenByType(AbstractTaggedObject::class)[0];
 
         return CertStatus::createFromContent($certStatus->getBinary());
     }
@@ -93,7 +69,7 @@ class SingleResponse
     public function getThisUpdate()
     {
         /** @var GeneralizedTime $GeneralizedTime */
-        $GeneralizedTime = $this->sequence->findChildrenByType(GeneralizedTime::class)[0];
+        $GeneralizedTime = $this->object->findChildrenByType(GeneralizedTime::class)[0];
 
         return $GeneralizedTime;
     }
@@ -105,7 +81,7 @@ class SingleResponse
     public function getNextUpdate()
     {
         /** @var ExplicitlyTaggedObject[] $taggedObjects */
-        $taggedObjects = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
+        $taggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         foreach ($taggedObjects as $taggedObject) {
             if ($taggedObject->getIdentifier()->getTagNumber() == 0) {
                 return $taggedObject;
@@ -121,7 +97,7 @@ class SingleResponse
     public function getSingleExtensions()
     {
         /** @var ExplicitlyTaggedObject[] $taggedObjects */
-        $taggedObjects = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
+        $taggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         foreach ($taggedObjects as $taggedObject) {
             if ($taggedObject->getIdentifier()->getTagNumber() == 1) {
                 return $taggedObject;

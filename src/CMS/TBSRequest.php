@@ -12,9 +12,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
-use FG\ASN1\ASN1Object;
 use FG\ASN1\ExplicitlyTaggedObject;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -23,44 +21,21 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\TBSRequest
  * @package Adapik\CMS
  */
-class TBSRequest
+class TBSRequest extends CMSBase
 {
     /**
      * @var Sequence
      */
-    private $sequence;
+    protected $object;
 
     /**
-     * TBSRequest constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
-
-    /**
-     * @param $content
-     *
+     * @param string $content
      * @return TBSRequest
      * @throws FormatException
      */
-    public static function createFromContent($content)
+    public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('TBSRequest must be type of Sequence');
-        }
-
-        $map = (new Mapper())->map($sequence, Maps\TBSRequest::MAP);
-
-        if ($map === null) {
-            throw new FormatException('TBSRequest invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\TBSRequest::class, Sequence::class));
     }
 
     /**
@@ -70,7 +45,7 @@ class TBSRequest
     public function getRequestorName()
     {
         /** @var ExplicitlyTaggedObject[] $tags */
-        $tags = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
+        $tags = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         foreach ($tags as $tag) {
             if ($tag->getIdentifier()->getTagNumber() == 1) {
                 return $tag;
@@ -87,7 +62,7 @@ class TBSRequest
     {
         $requests = [];
         /** @var Sequence[] $requestList */
-        $requestList = $this->sequence->findChildrenByType(Sequence::class);
+        $requestList = $this->object->findChildrenByType(Sequence::class);
         foreach ($requestList as $sequence) {
             $requests[] = Request::createFromContent($sequence->getBinaryContent());
         }
@@ -102,7 +77,7 @@ class TBSRequest
     public function getRequestExtensions()
     {
         /** @var ExplicitlyTaggedObject[] $tags */
-        $tags = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
+        $tags = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
 
         foreach ($tags as $tag) {
             if ($tag->getIdentifier()->getTagNumber() == 2) {

@@ -17,60 +17,30 @@ use FG\ASN1\Universal\Set;
  * @see     Maps\SignerInfo
  * @package Adapik\CMS
  */
-class SignerInfo
+class SignerInfo extends CMSBase
 {
-    const OID_CONTENT_TYPE           = '1.2.840.113549.1.9.3';
-    const OID_MESSAGE_DIGEST         = '1.2.840.113549.1.9.4';
+    const OID_CONTENT_TYPE = '1.2.840.113549.1.9.3';
+    const OID_MESSAGE_DIGEST = '1.2.840.113549.1.9.4';
     const OID_SIGNING_CERTIFICATE_V2 = '1.2.840.113549.1.9.16.2.47';
 
-    const TYPE_CMS          = 'CMS';
-    const TYPE_BES          = 'CAdES-BES';
-    const TYPE_T            = 'CAdES-T';
+    const TYPE_CMS = 'CMS';
+    const TYPE_BES = 'CAdES-BES';
+    const TYPE_T = 'CAdES-T';
     const TYPE_X_LONG_TYPE1 = 'CAdES-X Long Type 1';
 
     /**
      * @var Sequence
      */
-    private $sequence;
+    protected $object;
 
     /**
-     * SignerInfo constructor.
-     *
-     * @param Sequence $object
+     * @param string $content
+     * @return SignerInfo
+     * @throws FormatException
      */
-    public function __construct(Sequence $object)
+    public static function createFromContent(string $content)
     {
-        $this->sequence = $object;
-    }
-
-    /**
-     * Unsigned Attributes
-     * @return ExplicitlyTaggedObject
-     * @throws Exception
-     */
-    public function getUnsignedAttributes()
-    {
-        $exTaggedObjects = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
-        $attributes      = array_filter($exTaggedObjects, function ($value) {
-            return $value->getIdentifier()->getTagNumber() === 1;
-        });
-        
-        return array_pop($attributes);
-    }
-
-    /**
-     * Signed Attributes
-     * @return ExplicitlyTaggedObject
-     * @throws Exception
-     */
-    public function getSignedAttributes()
-    {
-        $exTaggedObjects = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
-        $attributes      = array_filter($exTaggedObjects, function ($value) {
-            return $value->getIdentifier()->getTagNumber() === 0;
-        });
-        
-        return array_pop($attributes);
+        return new self(self::makeFromContent($content, Maps\SignerInfo::class, Sequence::class));
     }
 
     /**
@@ -81,7 +51,7 @@ class SignerInfo
     public function getSignatureValue()
     {
         return bin2hex(
-            $this->sequence->findChildrenByType(OctetString::class)[0]->getBinaryContent()
+            $this->object->findChildrenByType(OctetString::class)[0]->getBinaryContent()
         );
     }
 
@@ -89,43 +59,24 @@ class SignerInfo
      * @return OctetString
      * @throws Exception
      */
-    public function getSignature() {
-        return $this->sequence->findChildrenByType(OctetString::class)[0];
-    }
-
-    /**
-     * Content type OID
-     * @return ObjectIdentifier
-     * @throws Exception
-     */
-    private function getContentType()
+    public function getSignature()
     {
-        $contentType = $this->getSignedAttributes()->findByOid(self::OID_CONTENT_TYPE);
-        if (!empty($contentType)) {
-            return $contentType[0]->getSiblings()[0]->findChildrenByType(ObjectIdentifier::class)[0];
-        }
-        
-        return null;
+        return $this->object->findChildrenByType(OctetString::class)[0];
     }
 
     /**
-     * Signature hex digest
+     * Signing cert hex digest
      * @return string
      * @throws Exception
      */
-    public function getMessageDigest()
+    public function getSigningCertDigest()
     {
-        $messageDigest = $this->getSignedAttributes()->findByOid(self::OID_MESSAGE_DIGEST);
-        if (!empty($messageDigest)) {
-            $digest = (string) $messageDigest[0]
-                ->getSiblings()[0]
-                ->findChildrenByType(OctetString::class)[0];
+        $digest = (string)$this->getSigningCert()
+            ->getChildren()[0]
+            ->getChildren()[0]
+            ->findChildrenByType(OctetString::class)[0];
 
-
-            return bin2hex($digest);
-        }
-        
-        return null;
+        return bin2hex($digest);
     }
 
     /**
@@ -139,23 +90,146 @@ class SignerInfo
         if ($signingCert) {
             return $signingCert[0]->getSiblings()[0]->findChildrenByType(Sequence::class)[0];
         }
-        
+
         return null;
     }
 
     /**
-     * Signing cert hex digest
+     * Signed Attributes
+     * @return ExplicitlyTaggedObject
+     * @throws Exception
+     */
+    public function getSignedAttributes()
+    {
+        $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+        $attributes = array_filter($exTaggedObjects, function ($value) {
+            return $value->getIdentifier()->getTagNumber() === 0;
+        });
+
+        return array_pop($attributes);
+    }
+
+    /**
+     * Sign algo (oid)
      * @return string
      * @throws Exception
      */
-    public function getSigningCertDigest()
+    public function getPublicKeyAlgorithm()
     {
-        $digest = (string) $this->getSigningCert()
-            ->getChildren()[0]
-            ->getChildren()[0]
-            ->findChildrenByType(OctetString::class)[0];
+        return (string)$this->object
+            ->findChildrenByType(Sequence::class)[2]
+            ->getChildren()[0];
+    }
 
-        return bin2hex($digest);
+    /**
+     * Hash algo (oid)
+     * @return string
+     * @throws Exception
+     */
+    public function getDigestAlgorithm()
+    {
+        return (string)$this->object
+            ->findChildrenByType(Sequence::class)[1]
+            ->getChildren()[0];
+    }
+
+    /**
+     * Define sign format
+     * @return string
+     * @throws Exception
+     */
+    public function defineType()
+    {
+        if ($this->isLongType1()) {
+            return self::TYPE_X_LONG_TYPE1;
+        }
+
+        if ($this->isT()) {
+            return self::TYPE_T;
+        }
+
+        if ($this->isBES()) {
+            return self::TYPE_BES;
+        }
+
+        return self::TYPE_CMS;
+    }
+
+    /**
+     * Is CAdES-X Long Type 1
+     * @return bool
+     * @throws Exception
+     */
+    private function isLongType1()
+    {
+        if ($this->isBES() && $this->isT() && $this->getEscTimeStampToken() && $this->hasEvidences()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Is CAdES-BES
+     * @return bool
+     * @throws Exception
+     */
+    private function isBES()
+    {
+        if ($this->getSigningCert() && $this->getMessageDigest() && $this->getContentType()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Signature hex digest
+     * @return string
+     * @throws Exception
+     */
+    public function getMessageDigest()
+    {
+        $messageDigest = $this->getSignedAttributes()->findByOid(self::OID_MESSAGE_DIGEST);
+        if (!empty($messageDigest)) {
+            $digest = (string)$messageDigest[0]
+                ->getSiblings()[0]
+                ->findChildrenByType(OctetString::class)[0];
+
+
+            return bin2hex($digest);
+        }
+
+        return null;
+    }
+
+    /**
+     * Content type OID
+     * @return ObjectIdentifier
+     * @throws Exception
+     */
+    private function getContentType()
+    {
+        $contentType = $this->getSignedAttributes()->findByOid(self::OID_CONTENT_TYPE);
+        if (!empty($contentType)) {
+            return $contentType[0]->getSiblings()[0]->findChildrenByType(ObjectIdentifier::class)[0];
+        }
+
+        return null;
+    }
+
+    /**
+     * Is CAdES-T
+     * @return bool
+     * @throws Exception
+     */
+    private function isT()
+    {
+        if ($this->isBES() && $this->getTimeStampToken()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -174,6 +248,21 @@ class SignerInfo
         }
 
         return null;
+    }
+
+    /**
+     * Unsigned Attributes
+     * @return ExplicitlyTaggedObject
+     * @throws Exception
+     */
+    public function getUnsignedAttributes()
+    {
+        $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+        $attributes = array_filter($exTaggedObjects, function ($value) {
+            return $value->getIdentifier()->getTagNumber() === 1;
+        });
+
+        return array_pop($attributes);
     }
 
     /**
@@ -203,112 +292,16 @@ class SignerInfo
     {
         $unsignedAttributes = $this->getUnsignedAttributes();
         if ($unsignedAttributes) {
-            $revValues  = $unsignedAttributes->findByOid(RevocationValues::getOid());
-            $revRefs    = $unsignedAttributes->findByOid(CompleteRevocationRefs::getOid());
+            $revValues = $unsignedAttributes->findByOid(RevocationValues::getOid());
+            $revRefs = $unsignedAttributes->findByOid(CompleteRevocationRefs::getOid());
             $certValues = $unsignedAttributes->findByOid(CertificateValues::getOid());
-            $certRefs   = $unsignedAttributes->findByOid(CompleteCertificateRefs::getOid());
+            $certRefs = $unsignedAttributes->findByOid(CompleteCertificateRefs::getOid());
             if (!empty($revValues) && !empty($revRefs) && !empty($certValues) && !empty($certRefs)) {
                 return true;
             }
         }
-        
+
         return false;
-    }
-
-    /**
-     * Is CAdES-BES
-     * @return bool
-     * @throws Exception
-     */
-    private function isBES()
-    {
-        if ($this->getSigningCert() && $this->getMessageDigest() && $this->getContentType()) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    /**
-     * Is CAdES-T
-     * @return bool
-     * @throws Exception
-     */
-    private function isT()
-    {
-        if ($this->isBES() && $this->getTimeStampToken()) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    /**
-     * Is CAdES-X Long Type 1
-     * @return bool
-     * @throws Exception
-     */
-    private function isLongType1()
-    {
-        if ($this->isBES() && $this->isT() && $this->getEscTimeStampToken() && $this->hasEvidences()) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    /**
-     * Sign algo (oid)
-     * @return string
-     * @throws Exception
-     */
-    public function getPublicKeyAlgorithm()
-    {
-        return (string) $this->sequence
-            ->findChildrenByType(Sequence::class)[2]
-            ->getChildren()[0];
-    }
-
-    /**
-     * Hash algo (oid)
-     * @return string
-     * @throws Exception
-     */
-    public function getDigestAlgorithm()
-    {
-        return (string) $this->sequence
-            ->findChildrenByType(Sequence::class)[1]
-            ->getChildren()[0];
-    }
-
-    /**
-     * @return string
-     */
-    public function getBinary(): string
-    {
-        return $this->sequence->getBinary();
-    }
-
-    /**
-     * Define sign format
-     * @return string
-     * @throws Exception
-     */
-    public function defineType()
-    {
-        if ($this->isLongType1()) {
-            return self::TYPE_X_LONG_TYPE1;
-        }
-        
-        if ($this->isT()) {
-            return self::TYPE_T;
-        }
-        
-        if ($this->isBES()) {
-            return self::TYPE_BES;
-        }
-        
-        return self::TYPE_CMS;
     }
 
     /**
@@ -362,6 +355,31 @@ class SignerInfo
         }
 
         return true;
+    }
+
+    /**
+     * @return array
+     * @throws Exception
+     */
+    private function getOrCreateUnsignedAttributes(): array
+    {
+        /**
+         * 1. First check do we have unsignedAttrs or not, cause it is optional fields and create it if not.
+         * Always push it to the end of child.
+         */
+        $UnsignedAttribute = $this->getUnsignedAttributes();
+
+        $unsignedSelfCreated = false;
+
+        if (is_null($UnsignedAttribute)) {
+            $UnsignedAttribute = $this->createUnsignedAttribute();
+            $unsignedSelfCreated = true;
+            $this->object->appendChild($UnsignedAttribute);
+        }
+
+        $UnsignedAttribute = $this->getUnsignedAttributes();
+
+        return array($UnsignedAttribute, $unsignedSelfCreated);
     }
 
     /**
@@ -419,31 +437,6 @@ class SignerInfo
     }
 
     /**
-     * @return array
-     * @throws Exception
-     */
-    private function getOrCreateUnsignedAttributes(): array
-    {
-        /**
-         * 1. First check do we have unsignedAttrs or not, cause it is optional fields and create it if not.
-         * Always push it to the end of child.
-         */
-        $UnsignedAttribute = $this->getUnsignedAttributes();
-
-        $unsignedSelfCreated = false;
-
-        if (is_null($UnsignedAttribute)) {
-            $UnsignedAttribute = $this->createUnsignedAttribute();
-            $unsignedSelfCreated = true;
-            $this->sequence->appendChild($UnsignedAttribute);
-        }
-
-        $UnsignedAttribute = $this->getUnsignedAttributes();
-
-        return array($UnsignedAttribute, $unsignedSelfCreated);
-    }
-
-    /**
      * This function will append TimeStampToken with TSTInfo or create TimeStampToken as UnsignedAttribute
      *
      * @param TimeStampResponse[] $timeStampResponses
@@ -491,7 +484,8 @@ class SignerInfo
      * @param TimeStampResponse $timeStampResponse
      * @throws ASN1\Exception\ParserException
      */
-    public function replaceUnsignedTimeStampToken(int $index, TimeStampResponse $timeStampResponse) {
+    public function replaceUnsignedTimeStampToken(int $index, TimeStampResponse $timeStampResponse)
+    {
         $UnsignedAttribute = $this->getUnsignedAttributes();
 
         $timeStampTokenSearch = $UnsignedAttribute->findByOid(TimeStampToken::getOid());
@@ -506,5 +500,4 @@ class SignerInfo
 
         return;
     }
-
 }

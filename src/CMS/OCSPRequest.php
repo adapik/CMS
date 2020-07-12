@@ -12,9 +12,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
-use FG\ASN1\ASN1Object;
 use FG\ASN1\ExplicitlyTaggedObject;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\Integer;
 use FG\ASN1\Universal\NullObject;
 use FG\ASN1\Universal\ObjectIdentifier;
@@ -36,17 +34,7 @@ class OCSPRequest extends RequestModel
     /**
      * @var Sequence
      */
-    private $sequence;
-
-    /**
-     * OCSPRequest constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
+    protected $object;
 
     /**
      * @param Certificate $publicCertificate
@@ -140,26 +128,13 @@ class OCSPRequest extends RequestModel
     }
 
     /**
-     * @param $content
-     *
+     * @param string $content
      * @return OCSPRequest
      * @throws FormatException
      */
-    public static function createFromContent($content)
+    public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('OCSPRequest must be type of Sequence');
-        }
-
-        $map = (new Mapper())->map($sequence, Maps\OCSPRequest::MAP);
-
-        if ($map === null) {
-            throw new FormatException('OCSPRequest invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\OCSPRequest::class, Sequence::class));
     }
 
     /**
@@ -174,7 +149,7 @@ class OCSPRequest extends RequestModel
 
         foreach ($urls as $url) {
 
-            $result = $this->curlRequest($url, $this->sequence->getBinary(), self::CONTENT_TYPE, OCSPResponse::CONTENT_TYPE);
+            $result = $this->curlRequest($url, $this->object->getBinary(), self::CONTENT_TYPE, OCSPResponse::CONTENT_TYPE);
 
             // Actually we need only 1 response, and if array is not set - we do not have any errors
             if (!isset($this->processErrors[$url]) && !is_null($result)) {
@@ -187,22 +162,20 @@ class OCSPRequest extends RequestModel
 
     /**
      * @return TBSRequest
-     * @throws FormatException
      */
     public function getTBSRequest()
     {
-        $tbsRequest = $this->sequence->getChildren()[0];
-
-        return TBSRequest::createFromContent($tbsRequest->getBinary());
+        return new TBSRequest($this->object->getChildren()[0]);
     }
 
     /**
+     * FIXME: возвращать объект
      * @return Signature|null
      * @throws FormatException
      */
     public function getOptionalSignature()
     {
-        $children = $this->sequence->getChildren();
+        $children = $this->object->getChildren();
 
         if (count($children) == 2) {
             return Signature::createFromContent($children[1]->getBinaryContent());

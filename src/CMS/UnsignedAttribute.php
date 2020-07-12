@@ -6,13 +6,16 @@ use Exception;
 use FG\ASN1\Universal\Sequence;
 use FG\ASN1\Universal\Set;
 
-abstract class UnsignedAttribute
+abstract class UnsignedAttribute extends CMSBase
 {
     /**
      * @var Sequence
      */
-    protected $sequence;
+    protected $object;
 
+    /**
+     * @return string
+     */
     final public static function getOid()
     {
         return static::$oid;
@@ -24,6 +27,6 @@ abstract class UnsignedAttribute
      */
     public function getAttributeValue()
     {
-        return $this->sequence->findChildrenByType(Set::class)[0];
+        return $this->object->findChildrenByType(Set::class)[0];
     }
 }

@@ -23,44 +23,21 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\Signature
  * @package Adapik\CMS
  */
-class Signature
+class Signature extends CMSBase
 {
     /**
      * @var Sequence
      */
-    private $sequence;
+    protected $object;
 
     /**
-     * Signature constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
-
-    /**
-     * @param $content
-     *
+     * @param string $content
      * @return Signature
      * @throws FormatException
      */
-    public static function createFromContent($content)
+    public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('Signature must be type of Sequence');
-        }
-
-        $map = (new Mapper())->map($sequence, Maps\Signature::MAP);
-
-        if ($map === null) {
-            throw new FormatException('Signature invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\Signature::class, Sequence::class));
     }
 
     /**
@@ -69,7 +46,7 @@ class Signature
      */
     public function getSignatureAlgorithm()
     {
-        $signatureAlgorithm = $this->sequence->getChildren()[0];
+        $signatureAlgorithm = $this->object->getChildren()[0];
 
         return AlgorithmIdentifier::createFromContent($signatureAlgorithm->getBinary());
     }
@@ -79,7 +56,7 @@ class Signature
      */
     public function getSignature()
     {
-        return $this->sequence->getChildren()[1];
+        return $this->object->getChildren()[1];
     }
 
     /**
@@ -90,9 +67,9 @@ class Signature
     {
         $certificates = [];
 
-        if (count($this->sequence->getChildren()) == 3) {
+        if (count($this->object->getChildren()) == 3) {
             /** @var ExplicitlyTaggedObject $certs */
-            $certs = $this->sequence->getChildren()[2];
+            $certs = $this->object->getChildren()[2];
 
             foreach ($certs->getChildren() as $cert) {
                 $certificates[] = Certificate::createFromContent($cert->getBinaryContent());

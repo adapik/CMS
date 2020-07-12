@@ -7,21 +7,21 @@ use FG\ASN1\Universal\Sequence;
 /**
  * RDN
  */
-class Name
+class Name extends CMSBase
 {
     /**
      * @var Sequence
      */
-    private $sequence;
+    protected $object;
 
     /**
-     * Name constructor.
-     *
-     * @param Sequence $sequence
+     * @param string $content
+     * @return Name
+     * @throws Exception\FormatException
      */
-    public function __construct(Sequence $sequence)
+    public static function createFromContent(string $content)
     {
-        $this->sequence = $sequence;
+        return new self(self::makeFromContent($content, Maps\Name::class, Sequence::class));
     }
 
     /**
@@ -31,11 +31,11 @@ class Name
     {
         $string = [];
 
-        foreach ($this->sequence->getChildren() as $set) {
+        foreach ($this->object->getChildren() as $set) {
             $sequence = $set->getChildren()[0];
-            $oid      = (string) $sequence->getChildren()[0];
-            $value    = (string) $sequence->getChildren()[1];
-            $string[] = $oid.': '.$value;
+            $oid = (string)$sequence->getChildren()[0];
+            $value = (string)$sequence->getChildren()[1];
+            $string[] = $oid . ': ' . $value;
         }
 
         return implode('; ', $string);
@@ -48,10 +48,10 @@ class Name
     {
         $array = [];
 
-        foreach ($this->sequence->getChildren() as $set) {
-            $sequence    = $set->getChildren()[0];
-            $oid         = (string) $sequence->getChildren()[0];
-            $value       = (string) $sequence->getChildren()[1];
+        foreach ($this->object->getChildren() as $set) {
+            $sequence = $set->getChildren()[0];
+            $oid = (string)$sequence->getChildren()[0];
+            $value = (string)$sequence->getChildren()[1];
             $array[$oid] = $value;
         }
 

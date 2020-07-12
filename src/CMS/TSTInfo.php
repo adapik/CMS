@@ -12,9 +12,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
-use FG\ASN1\ASN1Object;
 use FG\ASN1\ExplicitlyTaggedObject;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\Boolean;
 use FG\ASN1\Universal\GeneralizedTime;
 use FG\ASN1\Universal\Integer;
@@ -27,44 +25,21 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\TSTInfo
  * @package Adapik\CMS
  */
-class TSTInfo
+class TSTInfo extends CMSBase
 {
     /**
      * @var Sequence
      */
-    private $sequence;
+    protected $object;
 
     /**
-     * TSTInfo constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
-
-    /**
-     * @param $content
-     *
+     * @param string $content
      * @return TSTInfo
      * @throws FormatException
      */
-    public static function createFromContent($content)
+    public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('TSTInfo must be type of Sequence');
-        }
-
-        $map = (new Mapper())->map($sequence, Maps\TSTInfo::MAP);
-
-        if ($map === null) {
-            throw new FormatException('TSTInfo invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\TSTInfo::class, Sequence::class));
     }
 
     /**
@@ -73,7 +48,7 @@ class TSTInfo
      */
     public function getPolicy()
     {
-        return $this->sequence->findChildrenByType(ObjectIdentifier::class)[0];
+        return $this->object->findChildrenByType(ObjectIdentifier::class)[0];
     }
 
     /**
@@ -82,7 +57,7 @@ class TSTInfo
      */
     public function getMessageImprint()
     {
-        return $this->sequence->findChildrenByType(Sequence::class)[0];
+        return $this->object->findChildrenByType(Sequence::class)[0];
     }
 
     /**
@@ -91,7 +66,7 @@ class TSTInfo
      */
     public function getSerialNumber()
     {
-        return $this->sequence->findChildrenByType(Integer::class)[1];
+        return $this->object->findChildrenByType(Integer::class)[1];
     }
 
     /**
@@ -100,7 +75,7 @@ class TSTInfo
      */
     public function getGenTime()
     {
-        return $this->sequence->findChildrenByType(GeneralizedTime::class)[0];
+        return $this->object->findChildrenByType(GeneralizedTime::class)[0];
     }
 
     /**
@@ -110,7 +85,7 @@ class TSTInfo
     public function getAccuracy()
     {
         /** @var Sequence[] $sequences */
-        $sequences = $this->sequence->findChildrenByType(Sequence::class);
+        $sequences = $this->object->findChildrenByType(Sequence::class);
         if (count($sequences) > 1) {
             return $sequences[1];
         }
@@ -125,7 +100,7 @@ class TSTInfo
     public function getOrdering()
     {
         /** @var Boolean[] $booleans */
-        $booleans = $this->sequence->findChildrenByType(Boolean::class);
+        $booleans = $this->object->findChildrenByType(Boolean::class);
         if (count($booleans)) {
             return $booleans[0];
         }
@@ -135,7 +110,7 @@ class TSTInfo
 
     public function getNonce()
     {
-        $integers = $this->sequence->findChildrenByType(Integer::class);
+        $integers = $this->object->findChildrenByType(Integer::class);
         if (count($integers) == 3) {
             return $integers[2];
         }
@@ -149,7 +124,7 @@ class TSTInfo
     public function getTsa()
     {
         /** @var ExplicitlyTaggedObject[] $explicits */
-        $explicits = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
+        $explicits = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         foreach ($explicits as $explicit) {
             if ($explicit->getIdentifier()->getTagNumber() == 0) {
                 return $explicit;
@@ -165,7 +140,7 @@ class TSTInfo
     public function getExtensions()
     {
         /** @var ExplicitlyTaggedObject[] $explicits */
-        $explicits = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class);
+        $explicits = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         foreach ($explicits as $explicit) {
             if ($explicit->getIdentifier()->getTagNumber() == 1) {
                 return $explicit;

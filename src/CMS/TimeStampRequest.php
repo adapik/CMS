@@ -35,39 +35,16 @@ class TimeStampRequest extends RequestModel
     /**
      * @var Sequence
      */
-    protected $sequence;
+    protected $object;
 
     /**
-     * TimeStampRequest constructor.
-     *
-     * @param Sequence $object
-     */
-    public function __construct(Sequence $object)
-    {
-        $this->sequence = $object;
-    }
-
-    /**
-     * @param $content
-     *
+     * @param string $content
      * @return TimeStampRequest
      * @throws FormatException
      */
-    public static function createFromContent($content)
+    public static function createFromContent(string $content)
     {
-        $sequence = ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('TimeStampRequest must be type of Sequence');
-        }
-
-        $map = (new Mapper())->map($sequence, Maps\TimeStampRequest::MAP);
-
-        if ($map === null) {
-            throw new FormatException('TimeStampRequest invalid format');
-        }
-
-        return new self($sequence);
+        return new self(self::makeFromContent($content, Maps\TimeStampRequest::class, Sequence::class));
     }
 
     /**
@@ -109,7 +86,7 @@ class TimeStampRequest extends RequestModel
 
         foreach ($urls as $url) {
 
-            $result = $this->curlRequest($url, $this->sequence->getBinary(), self::CONTENT_TYPE, TimeStampResponse::CONTENT_TYPE);
+            $result = $this->curlRequest($url, $this->object->getBinary(), self::CONTENT_TYPE, TimeStampResponse::CONTENT_TYPE);
 
             // Actually we need only 1 response, and if array is not set - we do not have any errors
             if (!isset($this->processErrors[$url]) && !is_null($result)) {
@@ -120,22 +97,13 @@ class TimeStampRequest extends RequestModel
         return null;
     }
 
-
-    /**
-     * @return string
-     */
-    public function getBinary()
-    {
-        return $this->sequence->getBinary();
-    }
-
     /**
      * @return Boolean
      * @throws Exception
      */
     public function getCertReq()
     {
-        return $this->sequence->findChildrenByType(Boolean::class)[0];
+        return $this->object->findChildrenByType(Boolean::class)[0];
     }
 
     /**
@@ -144,7 +112,7 @@ class TimeStampRequest extends RequestModel
      */
     public function getExtensions()
     {
-        $objects = $this->sequence->findChildrenByType(ImplicitlyTaggedObject::class);
+        $objects = $this->object->findChildrenByType(ImplicitlyTaggedObject::class);
 
         if (count($objects)) {
             return $objects[0];
@@ -159,7 +127,7 @@ class TimeStampRequest extends RequestModel
      */
     public function getMessageImprint()
     {
-        return $this->sequence->findChildrenByType(Sequence::class)[0];
+        return $this->object->findChildrenByType(Sequence::class)[0];
     }
 
     /**
@@ -168,7 +136,7 @@ class TimeStampRequest extends RequestModel
      */
     public function getNonce()
     {
-        $integers = $this->sequence->findChildrenByType(Integer::class);
+        $integers = $this->object->findChildrenByType(Integer::class);
         if (count($integers) == 2) {
             return $integers[1];
         }
@@ -182,7 +150,7 @@ class TimeStampRequest extends RequestModel
      */
     public function getReqPolicy()
     {
-        $objects = $this->sequence->findChildrenByType(ObjectIdentifier::class);
+        $objects = $this->object->findChildrenByType(ObjectIdentifier::class);
         if (count($objects)) {
             return $objects[0];
         }

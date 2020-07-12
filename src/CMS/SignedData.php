@@ -5,11 +5,9 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use Exception;
 use FG\ASN1\ExplicitlyTaggedObject;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\NullObject;
-use FG\ASN1\Universal\Sequence;
 use FG\ASN1\Universal\OctetString;
-use FG\ASN1;
+use FG\ASN1\Universal\Sequence;
 
 /**
  * Class SignedData
@@ -17,33 +15,23 @@ use FG\ASN1;
  * @see     Maps\SignedData
  * @package Adapik\CMS
  */
-class SignedData
+class SignedData extends CMSBase
 {
     const OID_DATA = '1.2.840.113549.1.7.1';
 
     /**
      * @var Sequence
      */
-    private $sequence;
+    protected $object;
 
     /**
-     * @param Sequence $object
+     * @param string $content
+     * @return SignedData
+     * @throws FormatException
      */
-    public function __construct(Sequence $object)
+    public static function createFromContent(string $content)
     {
-        $this->sequence = $object;
-    }
-
-    /**
-     * Message content
-     * @return SignedDataContent
-     * @throws Exception
-     */
-    public function getSignedDataContent()
-    {
-        $SignedDataContent = $this->sequence->findChildrenByType(ExplicitlyTaggedObject::class)[0];
-
-        return new SignedDataContent($SignedDataContent->getChildren()[0]);
+        return new self(self::makeFromContent($content, Maps\SignedData::class, Sequence::class));
     }
 
     /**
@@ -59,11 +47,23 @@ class SignedData
     }
 
     /**
+     * Message content
+     * @return SignedDataContent
+     * @throws Exception
+     */
+    public function getSignedDataContent()
+    {
+        $SignedDataContent = $this->object->findChildrenByType(ExplicitlyTaggedObject::class)[0];
+
+        return new SignedDataContent($SignedDataContent->getChildren()[0]);
+    }
+
+    /**
      * Certificates of this message
-     * @deprecated
-     * @see SignedDataContent::getCertificateSet()
      * @return Certificate[]
      * @throws Exception
+     * @deprecated
+     * @see SignedDataContent::getCertificateSet()
      */
     public function extractCertificates(): array
     {
@@ -76,7 +76,7 @@ class SignedData
      */
     public function hasData()
     {
-        $siblings = $this->sequence->findByOid(self::OID_DATA)[0]->getSiblings();
+        $siblings = $this->object->findByOid(self::OID_DATA)[0]->getSiblings();
         /** @var ExplicitlyTaggedObject|null $dataValue */
         $dataValue = !empty($siblings) ? $siblings[0] : null;
         if (null === $dataValue || $dataValue instanceof NullObject) {
@@ -92,7 +92,7 @@ class SignedData
      */
     public function getData()
     {
-        $siblings = $this->sequence->findByOid(self::OID_DATA)[0]->getSiblings();
+        $siblings = $this->object->findByOid(self::OID_DATA)[0]->getSiblings();
         /** @var ExplicitlyTaggedObject|null $dataValue */
         $dataValue = count($siblings) > 0 ? $siblings[0] : null;
 
@@ -101,7 +101,7 @@ class SignedData
         }
         /** @var OctetString $octetString */
         $octetString = $dataValue->getChildren()[0];
-        $data        = '';
+        $data = '';
         if ($octetString->isConstructed()) {
             foreach ($octetString->getChildren() as $child) {
                 /** @var OctetString $child */
@@ -114,46 +114,13 @@ class SignedData
     }
 
     /**
-     * @return string
-     */
-    public function getBinary(): string
-    {
-        return $this->sequence->getBinary();
-    }
-
-    /**
-     * Конструктор из бинарных данных
-     *
-     * @param $content
-     *
-     * @return SignedData
-     *
-     * @throws FormatException
-     */
-    public static function createFromContent($content)
-    {
-        $sequence = ASN1\ASN1Object::fromFile($content);
-
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('SignedData must be type of Sequence');
-        }
-
-        $map = (new Mapper())->map($sequence, Maps\SignedData::MAP);
-
-        if ($map === null) {
-            throw new FormatException('SignedData invalid format');
-        }
-
-        return new self($sequence);
-    }
-
-    /**
      * Removing content if exist in case of necessity.
      * Actually we sign content hash and storing content not always strict.
      * Moreover content can be very huge and heavy
      */
-    public function removeEncapsulatedContentInfoEContent() {
-        $data = $this->sequence->findByOid(self::OID_DATA);
+    public function removeEncapsulatedContentInfoEContent()
+    {
+        $data = $this->object->findByOid(self::OID_DATA);
         $content = $data[0];
 
         $siblings = $content->getSiblings();

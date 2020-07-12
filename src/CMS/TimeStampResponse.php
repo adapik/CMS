@@ -84,4 +84,12 @@ class TimeStampResponse
 
         return null;
     }
+
+    /**
+     * @return string
+     */
+    public function getBinary()
+    {
+        return $this->sequence->getBinary();
+    }
 }

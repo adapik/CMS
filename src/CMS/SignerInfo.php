@@ -322,24 +322,14 @@ class SignerInfo
     public function addUnsignedRevocationValues(array $basicOCSPResponses)
     {
         /**
-         * 1. First check do we have unsignedAttrs or not, cause it is optional fields and create it if not.
-         * Always push it to the end of child.
+         * 1. Get or create unsigned attributes
          */
-        $UnsignedAttribute = $this->getUnsignedAttributes();
-
-        $unsignedSelfCreated = false;
-
-        if (is_null($UnsignedAttribute)) {
-            $UnsignedAttribute = $this->createUnsignedAttribute();
-            $unsignedSelfCreated = true;
-            $this->sequence->appendChild($UnsignedAttribute);
-        }
-
-        $UnsignedAttribute = $this->getUnsignedAttributes();
+        list($UnsignedAttribute, $unsignedSelfCreated) = $this->getOrCreateUnsignedAttributes();
 
         /**
-         * 2. Now check do we have to check existence of  1.2.840.113549.1.9.16.2.24 in attributes
+         * 2. Now check do we have to check existence of 1.2.840.113549.1.9.16.2.24 in attributes
          */
+        // FIXME: добавлять в массив
         if (count($UnsignedAttribute->findByOid(RevocationValues::getOid())) > 0) {
             throw new Exception("You already have RevocationValues in UnsignedAttributes");
         }
@@ -427,4 +417,94 @@ class SignerInfo
 
         return [];
     }
+
+    /**
+     * @return array
+     * @throws Exception
+     */
+    private function getOrCreateUnsignedAttributes(): array
+    {
+        /**
+         * 1. First check do we have unsignedAttrs or not, cause it is optional fields and create it if not.
+         * Always push it to the end of child.
+         */
+        $UnsignedAttribute = $this->getUnsignedAttributes();
+
+        $unsignedSelfCreated = false;
+
+        if (is_null($UnsignedAttribute)) {
+            $UnsignedAttribute = $this->createUnsignedAttribute();
+            $unsignedSelfCreated = true;
+            $this->sequence->appendChild($UnsignedAttribute);
+        }
+
+        $UnsignedAttribute = $this->getUnsignedAttributes();
+
+        return array($UnsignedAttribute, $unsignedSelfCreated);
+    }
+
+    /**
+     * This function will append TimeStampToken with TSTInfo or create TimeStampToken as UnsignedAttribute
+     *
+     * @param TimeStampResponse[] $timeStampResponses
+     * @throws Exception
+     */
+    public function addUnsignedTimeStampToken(array $timeStampResponses)
+    {
+        /** @var bool $unsignedSelfCreated */
+        list($UnsignedAttribute, $unsignedSelfCreated) = $this->getOrCreateUnsignedAttributes();
+
+        /**
+         * 2. Now check do we have to check existence of 1.2.840.113549.1.9.16.2.14 in attributes
+         */
+        $timeStampTokenSearch = $UnsignedAttribute->findByOid(TimeStampToken::getOid());
+        if (count($timeStampTokenSearch) > 0) {
+
+            $set = $timeStampTokenSearch[0]->getParent()->getChildren()[1];
+
+            foreach ($timeStampResponses as $timeStampResponse) {
+                $binary = $timeStampResponse->getTimeStampToken()->getBinary();
+                $set->appendChild(ASN1\ASN1Object::fromBinary($binary));
+            }
+
+        } else {
+            $timeStampToken = TimeStampToken::createEmpty();
+            $timeStampToken->getChildren()[1]->getChildren()[0]->remove();
+
+            foreach ($timeStampResponses as $timeStampResponse) {
+                $binary = $timeStampResponse->getTimeStampToken()->getBinary();
+                $timeStampToken->getChildren()[1]->appendChild(ASN1\ASN1Object::fromBinary($binary));
+            }
+
+            if ($unsignedSelfCreated) {
+                $UnsignedAttribute->replaceChild(0, $timeStampToken);
+            } else {
+                $UnsignedAttribute->appendChild($timeStampToken);
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * @param int $index
+     * @param TimeStampResponse $timeStampResponse
+     * @throws ASN1\Exception\ParserException
+     */
+    public function replaceUnsignedTimeStampToken(int $index, TimeStampResponse $timeStampResponse) {
+        $UnsignedAttribute = $this->getUnsignedAttributes();
+
+        $timeStampTokenSearch = $UnsignedAttribute->findByOid(TimeStampToken::getOid());
+
+        if (count($timeStampTokenSearch) == 0) {
+            throw new Exception("No TimeStampToken found");
+        }
+
+        $set = $timeStampTokenSearch[0]->getParent()->getChildren()[1];
+        $binary = $timeStampResponse->getTimeStampToken()->getBinary();
+        $set->replaceChild($index, ASN1\ASN1Object::fromBinary($binary));
+
+        return;
+    }
+
 }

@@ -11,9 +11,14 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Exception;
 use FG\ASN1\ASN1Object;
+use FG\ASN1\Exception\ParserException;
 use FG\ASN1\Mapper\Mapper;
+use FG\ASN1\Universal\NullObject;
+use FG\ASN1\Universal\ObjectIdentifier;
 use FG\ASN1\Universal\Sequence;
+use FG\ASN1\Universal\Set;
 
 /**
  * Class TimeStampToken
@@ -58,22 +63,49 @@ class TimeStampToken extends UnsignedAttribute
         return new self($sequence);
     }
 
-    public function getTSTInfo()
+    /**
+     * @return Sequence
+     * @throws Exception
+     */
+    public static function createEmpty()
     {
-        /** @var EncapsulatedContentInfo $SignedDataContent */
-        $EContent = $this->getSignedData()->getSignedDataContent()->getEncapsulatedContentInfo()->getEContent();
-
-        return TSTInfo::createFromContent($EContent[0]->getBinaryContent());
+        return Sequence::create([
+                ObjectIdentifier::create(self::getOid()),
+                Set::create([NullObject::create()]),
+            ]
+        );
     }
 
     /**
-     * @return SignedData
+     * @return TSTInfo[]
+     * @throws FormatException
+     * @throws ParserException
+     */
+    public function getTSTInfo()
+    {
+        $TSTInfo = [];
+        $signedData = $this->getSignedData();
+
+        foreach ($signedData as $data) {
+            $EContent = $data->getSignedDataContent()->getEncapsulatedContentInfo()->getEContent();
+            $TSTInfo[] = TSTInfo::createFromContent($EContent[0]->getBinaryContent());
+        }
+
+        return $TSTInfo;
+    }
+
+    /**
+     * @return SignedData[]
      * @throws FormatException
      */
     public function getSignedData()
     {
-        $SignedData = $this->sequence->getChildren()[1]->getChildren()[0];
+        $SignedData = [];
+        $children = $this->sequence->getChildren()[1]->getChildren();
+        foreach ($children as $child) {
+            $SignedData[] = SignedData::createFromContent($child->getBinary());
+        }
 
-        return SignedData::createFromContent($SignedData->getBinary());
+        return $SignedData;
     }
 }

@@ -66,7 +66,7 @@ class SignedDataContent
     public function getDigestAlgorithmIdentifiers()
     {
         $children = $this->sequence->getChildren();
-
+        // TODO:
         return;
     }
 

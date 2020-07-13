@@ -41,15 +41,16 @@ class OCSPResponse extends CMSBase
     }
 
     /**
-     * TODO: recheck
+     * Note: we lost parenthesis cause parsing binary content
      * @return ResponseBytes|null
+     * @throws FormatException
      */
     public function getResponseBytes()
     {
         $children = $this->object->getChildren();
 
         if (count($children) == 2) {
-            return new ResponseBytes($children[1]);
+            return ResponseBytes::createFromContent($children[1]->getBinaryContent());
         }
 
         return null;
@@ -71,6 +72,6 @@ class OCSPResponse extends CMSBase
      */
     public function getBasicOCSPResponse()
     {
-        return new BasicOCSPResponse($this->getResponseBytes()->getResponse());
+        return BasicOCSPResponse::createFromContent($this->getResponseBytes()->getResponse());
     }
 }

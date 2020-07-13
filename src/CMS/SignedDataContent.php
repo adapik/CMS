@@ -28,7 +28,7 @@ class SignedDataContent extends CMSBase
     /**
      * @var Sequence
      */
-    private $object;
+    protected $object;
 
     /**
      * @param string $content

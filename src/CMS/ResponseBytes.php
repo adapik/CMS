@@ -39,20 +39,24 @@ class ResponseBytes extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return ObjectIdentifier
+     * @return string
      */
     public function getResponseType()
     {
-        return $this->object->getChildren()[0];
+        /** @var ObjectIdentifier $objectIdentifier */
+        $objectIdentifier = $this->object->getChildren()[0];
+
+        return $objectIdentifier->__toString();
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return OctetString
+     * @return string
      */
     public function getResponse()
     {
-        return $this->object->getChildren()[1];
+        /** @var OctetString $octetString */
+        $octetString = $this->object->getChildren()[1];
+
+        return $octetString->__toString();
     }
 }

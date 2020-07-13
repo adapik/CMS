@@ -54,7 +54,7 @@ abstract class CMSBase implements CMSInterface
      * @param string $content
      * @param string $mapperClass
      * @param string $objectClass
-     * @return ASN1Object
+     * @return ASN1ObjectInterface
      * @throws FormatException
      */
     protected static function makeFromContent(string $content, string $mapperClass, string $objectClass) {

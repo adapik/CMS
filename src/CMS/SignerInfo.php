@@ -56,6 +56,7 @@ class SignerInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return OctetString
      * @throws Exception
      */
@@ -95,6 +96,7 @@ class SignerInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * Signed Attributes
      * @return ExplicitlyTaggedObject
      * @throws Exception
@@ -251,6 +253,7 @@ class SignerInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * Unsigned Attributes
      * @return ExplicitlyTaggedObject
      * @throws Exception
@@ -392,7 +395,7 @@ class SignerInfo extends CMSBase
 
     /**
      * @return TimeStampToken|null
-     * @throws FormatException
+     * @throws Exception
      */
     public function getUnsignedTimeStampToken()
     {
@@ -402,7 +405,7 @@ class SignerInfo extends CMSBase
             $rv = $attributes->findByOid(TimeStampToken::getOid());
 
             if ($rv) {
-                return TimeStampToken::createFromContent($rv[0]->getParent()->getBinary());
+                return new TimeStampToken($rv[0]->getParent());
             }
         }
 
@@ -411,7 +414,7 @@ class SignerInfo extends CMSBase
 
     /**
      * @return RevocationValues[]|null
-     * @throws Exception|FormatException
+     * @throws Exception
      */
     public function getUnsignedRevocationValues()
     {
@@ -426,8 +429,7 @@ class SignerInfo extends CMSBase
 
                 /** @var Sequence $child */
                 foreach ($set->getChildren() as $child) {
-                    $content = $child->getBinary();
-                    $values[] = RevocationValues::createFromContent($content);
+                    $values[] = new RevocationValues($child);
                 }
                 return $values;
             }

@@ -22,6 +22,7 @@ abstract class UnsignedAttribute extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return Set
      * @throws Exception
      */

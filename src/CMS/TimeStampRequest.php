@@ -98,6 +98,7 @@ class TimeStampRequest extends RequestModel
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return Boolean
      * @throws Exception
      */
@@ -107,6 +108,7 @@ class TimeStampRequest extends RequestModel
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ImplicitlyTaggedObject|null
      * @throws Exception
      */
@@ -122,6 +124,7 @@ class TimeStampRequest extends RequestModel
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return Sequence
      * @throws Exception
      */
@@ -131,6 +134,7 @@ class TimeStampRequest extends RequestModel
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return Integer|null
      * @throws Exception
      */
@@ -145,6 +149,7 @@ class TimeStampRequest extends RequestModel
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ObjectIdentifier
      * @throws Exception
      */

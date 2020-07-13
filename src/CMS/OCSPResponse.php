@@ -41,15 +41,15 @@ class OCSPResponse extends CMSBase
     }
 
     /**
+     * TODO: recheck
      * @return ResponseBytes|null
-     * @throws FormatException
      */
     public function getResponseBytes()
     {
         $children = $this->object->getChildren();
 
         if (count($children) == 2) {
-            return ResponseBytes::createFromContent($children[1]->getBinaryContent());
+            return new ResponseBytes($children[1]);
         }
 
         return null;
@@ -57,13 +57,12 @@ class OCSPResponse extends CMSBase
 
     /**
      * @return OCSPResponseStatus
-     * @throws FormatException
      */
     public function getResponseStatus()
     {
         $enum = $this->object->getChildren()[0];
 
-        return OCSPResponseStatus::createFromContent($enum->getBinary());
+        return new OCSPResponseStatus($enum);
     }
 
     /**
@@ -72,6 +71,6 @@ class OCSPResponse extends CMSBase
      */
     public function getBasicOCSPResponse()
     {
-        return BasicOCSPResponse::createFromOctetString($this->getResponseBytes()->getResponse());
+        return new BasicOCSPResponse($this->getResponseBytes()->getResponse());
     }
 }

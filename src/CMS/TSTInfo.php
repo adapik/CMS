@@ -12,6 +12,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
+use FG\ASN1\ASN1Object;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\Boolean;
 use FG\ASN1\Universal\GeneralizedTime;
@@ -43,6 +44,7 @@ class TSTInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ObjectIdentifier
      * @throws Exception
      */
@@ -52,6 +54,7 @@ class TSTInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return Sequence
      * @throws Exception
      */
@@ -61,6 +64,7 @@ class TSTInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return Integer
      * @throws Exception
      */
@@ -70,6 +74,7 @@ class TSTInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return GeneralizedTime
      * @throws Exception
      */
@@ -79,6 +84,7 @@ class TSTInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return Sequence|null
      * @throws Exception
      */
@@ -94,6 +100,7 @@ class TSTInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return Boolean|null
      * @throws Exception
      */
@@ -108,6 +115,11 @@ class TSTInfo extends CMSBase
         return null;
     }
 
+    /**
+     * FIXME: shouldn't return ASN1Object
+     * @return ASN1Object|null
+     * @throws Exception
+     */
     public function getNonce()
     {
         $integers = $this->object->findChildrenByType(Integer::class);
@@ -118,6 +130,7 @@ class TSTInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ExplicitlyTaggedObject|null
      * @throws Exception
      */
@@ -134,6 +147,7 @@ class TSTInfo extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ExplicitlyTaggedObject|null
      * @throws Exception
      */

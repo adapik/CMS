@@ -39,6 +39,7 @@ class ResponseBytes extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ObjectIdentifier
      */
     public function getResponseType()
@@ -47,6 +48,7 @@ class ResponseBytes extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return OctetString
      */
     public function getResponse()

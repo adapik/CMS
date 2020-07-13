@@ -40,16 +40,17 @@ class Request extends CMSBase
 
     /**
      * @return CertID
-     * @throws FormatException
+     * @throws Exception
      */
     public function getReqCert()
     {
         $reqCert = $this->object->findChildrenByType(Sequence::class)[0];
 
-        return CertID::createFromContent($reqCert->getBinary());
+        return new CertID($reqCert);
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ExplicitlyTaggedObject[]
      * @throws Exception
      */

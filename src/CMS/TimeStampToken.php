@@ -52,6 +52,7 @@ class TimeStampToken extends UnsignedAttribute
     }
 
     /**
+     * FIXME: shouldn't be created statically
      * @return TSTInfo[]
      * @throws FormatException
      * @throws ParserException
@@ -71,14 +72,13 @@ class TimeStampToken extends UnsignedAttribute
 
     /**
      * @return SignedData[]
-     * @throws FormatException
      */
     public function getSignedData()
     {
         $SignedData = [];
         $children = $this->object->getChildren()[1]->getChildren();
         foreach ($children as $child) {
-            $SignedData[] = SignedData::createFromContent($child->getBinary());
+            $SignedData[] = new SignedData($child);
         }
 
         return $SignedData;

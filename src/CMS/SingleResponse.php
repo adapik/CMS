@@ -48,7 +48,7 @@ class SingleResponse extends CMSBase
     {
         $certID = $this->object->findChildrenByType(Sequence::class)[0];
 
-        return CertID::createFromContent($certID->getBinary());
+        return new CertID($certID);
     }
 
     /**
@@ -59,10 +59,11 @@ class SingleResponse extends CMSBase
     {
         $certStatus = $this->object->findChildrenByType(AbstractTaggedObject::class)[0];
 
-        return CertStatus::createFromContent($certStatus->getBinary());
+        return new CertStatus($certStatus);
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return GeneralizedTime
      * @throws Exception
      */
@@ -75,6 +76,7 @@ class SingleResponse extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ExplicitlyTaggedObject|null
      * @throws Exception
      */
@@ -91,6 +93,7 @@ class SingleResponse extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ExplicitlyTaggedObject|null
      * @throws Exception
      */

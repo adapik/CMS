@@ -40,23 +40,26 @@ class SignedDataContent extends CMSBase
         return new self(self::makeFromContent($content, Maps\SignedDataContent::class, Sequence::class));
     }
 
+    /**
+     * TODO: implement and test
+     */
     public function getDigestAlgorithmIdentifiers()
     {
         $children = $this->object->getChildren();
-        // TODO:
+
         return;
     }
 
     /**
      * @return EncapsulatedContentInfo
-     * @throws FormatException
+     * @throws Exception
      */
     public function getEncapsulatedContentInfo()
     {
         /** @var ExplicitlyTaggedObject $EncapsulatedContentInfoSet */
         $sequence = $this->object->findChildrenByType(Sequence::class)[0];
 
-        return EncapsulatedContentInfo::createFromContent($sequence->getBinary());
+        return new EncapsulatedContentInfo($sequence);
     }
 
     /**
@@ -84,6 +87,9 @@ class SignedDataContent extends CMSBase
         return [];
     }
 
+    /**
+     * TODO: implement and test
+     */
     public function getRevocationInfoChoices()
     {
         $children = $this->object->getChildren();

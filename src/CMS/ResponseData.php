@@ -41,6 +41,7 @@ class ResponseData extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ExplicitlyTaggedObject
      * @throws Exception
      */
@@ -55,6 +56,7 @@ class ResponseData extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return GeneralizedTime
      * @throws Exception
      */
@@ -67,6 +69,7 @@ class ResponseData extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return Sequence|OctetString
      * @throws Exception
      */

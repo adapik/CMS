@@ -42,16 +42,16 @@ class Signature extends CMSBase
 
     /**
      * @return AlgorithmIdentifier
-     * @throws FormatException
      */
     public function getSignatureAlgorithm()
     {
         $signatureAlgorithm = $this->object->getChildren()[0];
 
-        return AlgorithmIdentifier::createFromContent($signatureAlgorithm->getBinary());
+        return new AlgorithmIdentifier($signatureAlgorithm);
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return BitString
      */
     public function getSignature()
@@ -60,6 +60,7 @@ class Signature extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't be created from content
      * @return Certificate[]
      * @throws FormatException
      */

@@ -42,6 +42,7 @@ class RevocationValues extends UnsignedAttribute
     }
 
     /**
+     * FIXME: shouldn't be created from content
      * @return CertificateList[]|null
      * @throws FormatException
      */
@@ -71,6 +72,7 @@ class RevocationValues extends UnsignedAttribute
     }
 
     /**
+     * FIXME: shouldn't be created from content
      * @return BasicOCSPResponse[]|null
      * @throws FormatException
      */

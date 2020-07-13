@@ -39,6 +39,7 @@ class TBSRequest extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ExplicitlyTaggedObject|null
      * @throws Exception
      */
@@ -55,6 +56,7 @@ class TBSRequest extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't be created statically
      * @return Request[]
      * @throws FormatException
      */
@@ -71,6 +73,7 @@ class TBSRequest extends CMSBase
     }
 
     /**
+     * FIXME: shouldn't return ASN1Object
      * @return ExplicitlyTaggedObject|null
      * @throws Exception
      */

@@ -11,6 +11,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\Universal\Integer;
 use FG\ASN1\Universal\OctetString;
@@ -48,7 +49,7 @@ class CertID extends CMSBase
     }
 
     /**
-     * @return OctetString
+     * @return OctetString|ASN1ObjectInterface
      * @throws ParserException
      */
     public function getIssuerKeyHash()
@@ -59,7 +60,7 @@ class CertID extends CMSBase
     }
 
     /**
-     * @return OctetString
+     * @return OctetString|ASN1ObjectInterface
      * @throws ParserException
      */
     public function getIssuerNameHash()
@@ -70,7 +71,7 @@ class CertID extends CMSBase
     }
 
     /**
-     * @return Integer
+     * @return Integer|ASN1ObjectInterface
      * @throws ParserException
      */
     public function getSerialNumber()

@@ -1,27 +1,15 @@
 <?php
-
 /**
  * CertificateRevocationList
  *
- * PHP version 5
- *
- * @category  File
- * @package   ASN1
- * @author    Jim Wigginton <terrafrost@php.net>
- * @copyright 2016 Jim Wigginton
- * @license   http://www.opensource.org/licenses/mit-license.html  MIT License
- * @link      http://phpseclib.sourceforge.net
+ * @author    Nurlan Mukhanov <nurike@gmail.com>
+ * @copyright 2020 Nurlan Mukhanov
+ * @license   https://en.wikipedia.org/wiki/MIT_License MIT License
+ * @link      https://github.com/Adapik/CMS
  */
 
 namespace Adapik\CMS\Maps;
 
-/**
- * CertificateRevocationList
- *
- * @package ASN1
- * @author  Jim Wigginton <terrafrost@php.net>
- * @access  public
- */
 abstract class CertificateRevocationList extends CertificateList
 {
 

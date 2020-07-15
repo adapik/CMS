@@ -78,9 +78,11 @@ class TSTInfo extends CMSBase
      * @return GeneralizedTime
      * @throws Exception
      */
-    public function getGenTime()
+    public function getGenTime() : GeneralizedTime
     {
-        return $this->object->findChildrenByType(GeneralizedTime::class)[0];
+    	$binary = $this->object->findChildrenByType(GeneralizedTime::class)[0]->getBinary();
+
+        return GeneralizedTime::fromBinary($binary);
     }
 
     /**

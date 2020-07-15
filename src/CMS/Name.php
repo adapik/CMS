@@ -5,7 +5,9 @@ namespace Adapik\CMS;
 use FG\ASN1\Universal\Sequence;
 
 /**
- * RDN
+ * Class Name
+ * @see Maps\Name
+ * @package Adapik\CMS
  */
 class Name extends CMSBase
 {

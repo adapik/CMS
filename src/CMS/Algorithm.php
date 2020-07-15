@@ -26,6 +26,34 @@ class Algorithm
     const OID_RIPEMD128 = "1.3.36.3.2.2";
     const OID_RIPEMD256 = "1.3.36.3.2.3";
 
+    public static function byOid (string $oid) {
+		switch ($oid) {
+			case self::OID_MD2:
+				return 'md2';
+			case self::OID_MD4:
+				return 'md4';
+			case self::OID_MD5:
+				return 'md5';
+			case self::OID_SHA1:
+				return 'sha1';
+			case self::OID_SHA256:
+				return 'sha256';
+			case self::OID_SHA384:
+				return 'sha384';
+			case self::OID_SHA512:
+				return 'sha512';
+			case self::OID_SHA224:
+				return 'sha224';
+			case self::OID_RIPEMD160:
+				return 'ripemd160';
+			case self::OID_RIPEMD128:
+				return 'ripemd128';
+			case self::OID_RIPEMD256:
+				return 'ripemd256';
+			default:
+				throw new FormatException('Unknown hash algorithm');
+		}
+}
     /**
      * Converts string value to desired hash algorithm
      *

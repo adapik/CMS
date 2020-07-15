@@ -75,10 +75,10 @@ class Certificate extends CMSBase
     /**
      * @param string $oidString
      *
-     * @return ASN1\ASN1Object|null
+     * @return ASN1\ASN1ObjectInterface|null
      * @throws ASN1\Exception\ParserException
      */
-    private function getExtension(string $oidString)
+    protected function getExtension(string $oidString)
     {
         $oid = $this->getExtensions()->findByOid($oidString);
 
@@ -183,12 +183,12 @@ class Certificate extends CMSBase
     }
 
     /**
-     * @return Name
+     * @return Subject
      * @throws Exception
      */
     public function getSubject()
     {
-        return new Name($this->getTBSCertificate()->getChildren()[5]);
+        return new Subject($this->getTBSCertificate()->getChildren()[5]);
     }
 
     /**

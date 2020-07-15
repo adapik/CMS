@@ -5,11 +5,13 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use Exception;
 use FG\ASN1;
+use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\ObjectIdentifier;
 use FG\ASN1\Universal\OctetString;
 use FG\ASN1\Universal\Sequence;
 use FG\ASN1\Universal\Set;
+use FG\ASN1\Universal\UTCTime;
 
 /**
  * Class SignerInfo
@@ -22,6 +24,7 @@ class SignerInfo extends CMSBase
     const OID_CONTENT_TYPE = '1.2.840.113549.1.9.3';
     const OID_MESSAGE_DIGEST = '1.2.840.113549.1.9.4';
     const OID_SIGNING_CERTIFICATE_V2 = '1.2.840.113549.1.9.16.2.47';
+	const OID_SIGNING_TIME   = "1.2.840.113549.1.9.5";
 
     const TYPE_CMS = 'CMS';
     const TYPE_BES = 'CAdES-BES';
@@ -227,30 +230,27 @@ class SignerInfo extends CMSBase
      */
     private function isT()
     {
-        if ($this->isBES() && $this->getTimeStampToken()) {
+        if ($this->isBES() && $this->getUnsignedTimeStampToken()) {
             return true;
         }
 
         return false;
     }
 
-    /**
-     * Signature Timestamp Attribute
-     * @return ASN1\Object|null
-     * @throws Exception
-     */
-    private function getTimeStampToken()
-    {
-        $attributes = $this->getUnsignedAttributes();
-        if ($attributes) {
-            $ts = $this->getUnsignedAttributes()->findByOid(TimeStampToken::getOid());
-            if ($ts) {
-                return $ts[0]->getSiblings()[0]->findChildrenByType(Sequence::class)[0];
-            }
-        }
+	/**
+	 * Returns users signing time. Be careful, cause it's users' computer time.
+	 * @return UTCTime|null
+	 * @throws ParserException
+	 */
+    public function getSigningTime() {
+		$SignedTimeStamp = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_TIME);
+		if ($SignedTimeStamp) {
+			$binary = $SignedTimeStamp[0]->getSiblings()[0]->getChildren()[0]->getBinary();
+			return ASN1\Universal\UTCTime::fromBinary($binary);
+		}
 
-        return null;
-    }
+		return null;
+	}
 
     /**
      * FIXME: shouldn't return ASN1Object
@@ -320,7 +320,7 @@ class SignerInfo extends CMSBase
         /**
          * 1. Get or create unsigned attributes
          */
-        list($UnsignedAttribute, $unsignedSelfCreated) = $this->getOrCreateUnsignedAttributes();
+        [$UnsignedAttribute, $unsignedSelfCreated] = $this->getOrCreateUnsignedAttributes();
 
         /**
          * 2. Now check do we have to check existence of 1.2.840.113549.1.9.16.2.24 in attributes
@@ -447,7 +447,7 @@ class SignerInfo extends CMSBase
     public function addUnsignedTimeStampToken(array $timeStampResponses)
     {
         /** @var bool $unsignedSelfCreated */
-        list($UnsignedAttribute, $unsignedSelfCreated) = $this->getOrCreateUnsignedAttributes();
+        [$UnsignedAttribute, $unsignedSelfCreated] = $this->getOrCreateUnsignedAttributes();
 
         /**
          * 2. Now check do we have to check existence of 1.2.840.113549.1.9.16.2.14 in attributes

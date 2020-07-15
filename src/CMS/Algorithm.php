@@ -26,6 +26,12 @@ class Algorithm
     const OID_RIPEMD128 = "1.3.36.3.2.2";
     const OID_RIPEMD256 = "1.3.36.3.2.3";
 
+	/**
+	 * @param string $oid
+	 *
+	 * @return string
+	 * @throws FormatException
+	 */
     public static function byOid (string $oid) {
 		switch ($oid) {
 			case self::OID_MD2:

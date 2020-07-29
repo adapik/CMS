@@ -30,4 +30,12 @@ class AlgorithmIdentifier extends CMSBase
     {
         return new self(self::makeFromContent($content, Maps\AlgorithmIdentifier::class, Sequence::class));
     }
+
+    /**
+     * @return string HASH Algorithm OID representation
+     */
+    public function getAlgorithmOid()
+    {
+        return $this->object->getChildren()[0]->__toString();
+    }
 }

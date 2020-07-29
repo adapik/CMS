@@ -24,7 +24,7 @@ class SignerInfo extends CMSBase
     const OID_CONTENT_TYPE = '1.2.840.113549.1.9.3';
     const OID_MESSAGE_DIGEST = '1.2.840.113549.1.9.4';
     const OID_SIGNING_CERTIFICATE_V2 = '1.2.840.113549.1.9.16.2.47';
-	const OID_SIGNING_TIME   = "1.2.840.113549.1.9.5";
+    const OID_SIGNING_TIME = "1.2.840.113549.1.9.5";
 
     const TYPE_CMS = 'CMS';
     const TYPE_BES = 'CAdES-BES';
@@ -237,20 +237,24 @@ class SignerInfo extends CMSBase
         return false;
     }
 
-	/**
-	 * Returns users signing time. Be careful, cause it's users' computer time.
-	 * @return UTCTime|null
-	 * @throws ParserException
-	 */
-    public function getSigningTime() {
-		$SignedTimeStamp = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_TIME);
-		if ($SignedTimeStamp) {
-			$binary = $SignedTimeStamp[0]->getSiblings()[0]->getChildren()[0]->getBinary();
-			return ASN1\Universal\UTCTime::fromBinary($binary);
-		}
+    /**
+     * @return TimeStampToken|null
+     * @throws Exception
+     */
+    public function getUnsignedTimeStampToken()
+    {
+        $attributes = $this->getUnsignedAttributes();
 
-		return null;
-	}
+        if ($attributes) {
+            $rv = $attributes->findByOid(TimeStampToken::getOid());
+
+            if ($rv) {
+                return new TimeStampToken($rv[0]->getParent());
+            }
+        }
+
+        return null;
+    }
 
     /**
      * FIXME: shouldn't return ASN1Object
@@ -305,6 +309,22 @@ class SignerInfo extends CMSBase
         }
 
         return false;
+    }
+
+    /**
+     * Returns users signing time. Be careful, cause it's users' computer time.
+     * @return UTCTime|null
+     * @throws ParserException
+     */
+    public function getSigningTime()
+    {
+        $SignedTimeStamp = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_TIME);
+        if ($SignedTimeStamp) {
+            $binary = $SignedTimeStamp[0]->getSiblings()[0]->getChildren()[0]->getBinary();
+            return ASN1\Universal\UTCTime::fromBinary($binary);
+        }
+
+        return null;
     }
 
     /**
@@ -394,25 +414,6 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * @return TimeStampToken|null
-     * @throws Exception
-     */
-    public function getUnsignedTimeStampToken()
-    {
-        $attributes = $this->getUnsignedAttributes();
-
-        if ($attributes) {
-            $rv = $attributes->findByOid(TimeStampToken::getOid());
-
-            if ($rv) {
-                return new TimeStampToken($rv[0]->getParent());
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @return RevocationValues[]|null
      * @throws Exception
      */
@@ -482,11 +483,12 @@ class SignerInfo extends CMSBase
     }
 
     /**
+     * FIXME: replaceChild
      * @param int $index
-     * @param TimeStampResponse $timeStampResponse
+     * @param TimeStampResponse $newTimeStampResponse
      * @throws ASN1\Exception\ParserException
      */
-    public function replaceUnsignedTimeStampToken(int $index, TimeStampResponse $timeStampResponse)
+    public function replaceUnsignedTimeStampToken(TimeStampResponse $oldTimeStampResponse, TimeStampResponse $newTimeStampResponse)
     {
         $UnsignedAttribute = $this->getUnsignedAttributes();
 
@@ -497,8 +499,8 @@ class SignerInfo extends CMSBase
         }
 
         $set = $timeStampTokenSearch[0]->getParent()->getChildren()[1];
-        $binary = $timeStampResponse->getTimeStampToken()->getBinary();
-        $set->replaceChild($index, ASN1\ASN1Object::fromBinary($binary));
+        $binary = $newTimeStampResponse->getTimeStampToken()->getBinary();
+        $set->replaceChild($oldTimeStampResponse, ASN1\ASN1Object::fromBinary($binary));
 
         return;
     }

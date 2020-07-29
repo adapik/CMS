@@ -52,7 +52,6 @@ class TimeStampToken extends UnsignedAttribute
     }
 
     /**
-     * FIXME: shouldn't be created statically
      * @return TSTInfo[]
      * @throws FormatException
      * @throws ParserException

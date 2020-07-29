@@ -41,13 +41,18 @@ class SignedDataContent extends CMSBase
     }
 
     /**
-     * TODO: implement and test
+     * @return AlgorithmIdentifier[]
      */
     public function getDigestAlgorithmIdentifiers()
     {
-        $children = $this->object->getChildren();
+        $AlgorithmIdentifiers = [];
+        $digestAlgorithms = $this->object->getChildren()[1];
 
-        return;
+        foreach ($digestAlgorithms->getChildren() as $child) {
+            $AlgorithmIdentifiers[] = new AlgorithmIdentifier($child);
+        }
+
+        return $AlgorithmIdentifiers;
     }
 
     /**

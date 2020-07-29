@@ -12,7 +12,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
-use FG\ASN1\ASN1Object;
+use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\Boolean;
 use FG\ASN1\Universal\GeneralizedTime;
@@ -35,6 +35,7 @@ class TSTInfo extends CMSBase
 
     /**
      * @param string $content
+     *
      * @return TSTInfo
      * @throws FormatException
      */
@@ -44,50 +45,7 @@ class TSTInfo extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return ObjectIdentifier
-     * @throws Exception
-     */
-    public function getPolicy()
-    {
-        return $this->object->findChildrenByType(ObjectIdentifier::class)[0];
-    }
-
-    /**
-     * FIXME: shouldn't return ASN1Object
-     * @return Sequence
-     * @throws Exception
-     */
-    public function getMessageImprint()
-    {
-        return $this->object->findChildrenByType(Sequence::class)[0];
-    }
-
-    /**
-     * FIXME: shouldn't return ASN1Object
-     * @return Integer
-     * @throws Exception
-     */
-    public function getSerialNumber()
-    {
-        return $this->object->findChildrenByType(Integer::class)[1];
-    }
-
-    /**
-     * FIXME: shouldn't return ASN1Object
-     * @return GeneralizedTime
-     * @throws Exception
-     */
-    public function getGenTime() : GeneralizedTime
-    {
-    	$binary = $this->object->findChildrenByType(GeneralizedTime::class)[0]->getBinary();
-
-        return GeneralizedTime::fromBinary($binary);
-    }
-
-    /**
-     * FIXME: shouldn't return ASN1Object
-     * @return Sequence|null
+     * @return Accuracy|null
      * @throws Exception
      */
     public function getAccuracy()
@@ -95,14 +53,66 @@ class TSTInfo extends CMSBase
         /** @var Sequence[] $sequences */
         $sequences = $this->object->findChildrenByType(Sequence::class);
         if (count($sequences) > 1) {
-            return $sequences[1];
+            return new Accuracy($sequences[1]);
         }
 
         return null;
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
+     * TODO: implement
+     *
+     * @return ExplicitlyTaggedObject|null
+     * @throws Exception
+     */
+    /*	public function getExtensions() {
+            $explicits = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+            foreach($explicits as $explicit) {
+                if($explicit->getIdentifier()->getTagNumber() == 1) {
+                    return $explicit;
+                }
+            }
+
+            return null;
+        }*/
+
+    /**
+     * @return GeneralizedTime|ASN1ObjectInterface
+     * @throws Exception
+     */
+    public function getGenTime(): GeneralizedTime
+    {
+        $binary = $this->object->findChildrenByType(GeneralizedTime::class)[0]->getBinary();
+
+        return GeneralizedTime::fromBinary($binary);
+    }
+
+    /**
+     * @return MessageImprint
+     * @throws Exception
+     */
+    public function getMessageImprint()
+    {
+        return new MessageImprint($this->object->findChildrenByType(Sequence::class)[0]);
+    }
+
+    /**
+     * @return Integer|ASN1ObjectInterface
+     * @throws Exception
+     */
+    public function getNonce()
+    {
+        $integers = $this->object->findChildrenByType(Integer::class);
+        if (count($integers) == 3) {
+            $binary = $integers[2]->getBinary();
+
+            return Integer::fromBinary($binary);
+        }
+
+        return null;
+    }
+
+    /**
      * @return Boolean|null
      * @throws Exception
      */
@@ -111,29 +121,40 @@ class TSTInfo extends CMSBase
         /** @var Boolean[] $booleans */
         $booleans = $this->object->findChildrenByType(Boolean::class);
         if (count($booleans)) {
-            return $booleans[0];
+            $binary = $booleans[0]->getBinary();
+
+            return Boolean::fromBinary($binary);
         }
 
         return null;
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return ASN1Object|null
+     * @return ObjectIdentifier|ASN1ObjectInterface
      * @throws Exception
      */
-    public function getNonce()
+    public function getPolicy()
     {
-        $integers = $this->object->findChildrenByType(Integer::class);
-        if (count($integers) == 3) {
-            return $integers[2];
-        }
-        return null;
+        $binary = $this->object->findChildrenByType(ObjectIdentifier::class)[0]->getBinary();
+
+        return ObjectIdentifier::fromBinary($binary);
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return ExplicitlyTaggedObject|null
+     * @return Integer|ASN1ObjectInterface
+     * @throws Exception
+     */
+    public function getSerialNumber()
+    {
+        $binary = $this->object->findChildrenByType(Integer::class)[1]->getBinary();
+
+        return Integer::fromBinary($binary);
+    }
+
+    /**
+     * TODO: create CMS and check correctness
+     *
+     * @return GeneralName|null
      * @throws Exception
      */
     public function getTsa()
@@ -142,26 +163,10 @@ class TSTInfo extends CMSBase
         $explicits = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         foreach ($explicits as $explicit) {
             if ($explicit->getIdentifier()->getTagNumber() == 0) {
-                return $explicit;
+                return new GeneralName($explicit);
             }
         }
-        return null;
-    }
 
-    /**
-     * FIXME: shouldn't return ASN1Object
-     * @return ExplicitlyTaggedObject|null
-     * @throws Exception
-     */
-    public function getExtensions()
-    {
-        /** @var ExplicitlyTaggedObject[] $explicits */
-        $explicits = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
-        foreach ($explicits as $explicit) {
-            if ($explicit->getIdentifier()->getTagNumber() == 1) {
-                return $explicit;
-            }
-        }
         return null;
     }
 }

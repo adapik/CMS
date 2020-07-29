@@ -14,6 +14,9 @@ use FG\ASN1\Universal\Sequence;
 
 /**
  * Certificate
+ *
+ * @see     Maps\Certificate
+ * @package Adapik\CMS
  */
 class Certificate extends CMSBase
 {
@@ -270,5 +273,24 @@ class Certificate extends CMSBase
         $octet = $child->findChildrenByType(ASN1\Universal\BitString::class)[0];
 
         return Algorithm::hashValue($algorithmOID, hex2bin($octet->getStringValue()));
+    }
+
+    /**
+     * @return AlgorithmIdentifier
+     */
+    public function getSignatureAlgorithm()
+    {
+        return new AlgorithmIdentifier($this->object->getChildren()[1]);
+    }
+
+    /**
+     * @return ASN1\ASN1ObjectInterface|BitString
+     * @throws ASN1\Exception\ParserException
+     */
+    public function getSignature()
+    {
+        $binary = $this->object->getChildren()[2]->getBinary();
+
+        return BitString::fromBinary($binary);
     }
 }

@@ -5,6 +5,7 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use Exception;
 use FG\ASN1;
+use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\ObjectIdentifier;
@@ -77,7 +78,7 @@ class SignerInfo extends CMSBase
      */
     public function getSigningCertDigest()
     {
-        $signingCertificateV2 = $this->signingCertificateV2();
+        $signingCertificateV2 = $this->getSigningCertificateV2();
 
         if (!$signingCertificateV2)
             return null;
@@ -97,7 +98,7 @@ class SignerInfo extends CMSBase
      * @return Sequence|ASN1\ASN1ObjectInterface|null
      * @throws ParserException
      */
-    public function signingCertificateV2()
+    public function getSigningCertificateV2()
     {
         $signingCert = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_CERTIFICATE_V2);
         if ($signingCert) {
@@ -111,18 +112,39 @@ class SignerInfo extends CMSBase
     /**
      * Signed Attributes without parent reference
      *
-     * @return ExplicitlyTaggedObject|ASN1\ASN1ObjectInterface
+     * @return Set|ASN1\ASN1ObjectInterface
      * @throws Exception
      */
     public function getSignedAttributes()
     {
         $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         /** @var ExplicitlyTaggedObject[] $attributes */
-        $attributes = array_filter($exTaggedObjects, function ($value) {
-            return $value->getIdentifier()->getTagNumber() === 0;
-        });
+        $attributes = array_filter($exTaggedObjects,
+            function ($value) {
+                return $value->getIdentifier()->getTagNumber() === 0;
+            }
+        );
 
-        return $this->detachAllAttributes($attributes);
+        return $this->convertAttributesToSet(array_pop($attributes));
+    }
+
+    /**
+     * @param ExplicitlyTaggedObject $attributes
+     *
+     * @return Set|ASN1ObjectInterface
+     * @throws ParserException
+     */
+    private function convertAttributesToSet(ExplicitlyTaggedObject $attributes)
+    {
+        // 1. If we return attributes as is - we give reference to parent so any object can be changed directly.
+        // That's why we have to create new object from binary
+        // 2. When we sign signed attributes, we use Set not ExplicitlyTaggedObject !IMPORTANT
+        // @see https://tools.ietf.org/html/rfc5652#section-5.4
+
+        $binary = $attributes->getBinary();
+        $object = ASN1\ASN1Object::fromBinary($binary);
+
+        return Set::create($object->getChildren());
     }
 
     /**
@@ -192,7 +214,7 @@ class SignerInfo extends CMSBase
      */
     protected function isBES()
     {
-        if ($this->signingCertificateV2() && $this->getMessageDigest() && $this->getContentType()) {
+        if ($this->getSigningCertificateV2() && $this->getMessageDigest() && $this->getContentType()) {
             return true;
         }
 
@@ -269,7 +291,8 @@ class SignerInfo extends CMSBase
 
     /**
      * Unsigned Attributes without parent reference
-     * @return ExplicitlyTaggedObject
+     *
+     * @return Set|ASN1\ASN1ObjectInterface
      * @throws Exception
      */
     public function getUnsignedAttributes()
@@ -279,7 +302,7 @@ class SignerInfo extends CMSBase
             return $value->getIdentifier()->getTagNumber() === 1;
         });
 
-        return $this->detachAllAttributes($attributes);
+        return $this->convertAttributesToSet(array_pop($attributes));
     }
 
     /**
@@ -514,26 +537,5 @@ class SignerInfo extends CMSBase
         $set->replaceChild($oldTimeStampResponse, ASN1\ASN1Object::fromBinary($binary));
 
         return;
-    }
-
-    /**
-     * @param ExplicitlyTaggedObject[] $attributes
-     * @return ExplicitlyTaggedObject|ASN1\ASN1ObjectInterface
-     * @throws ASN1\Exception\Exception
-     * @throws ParserException
-     */
-    protected function detachAllAttributes(iterable $attributes)
-    {
-        // if we return attributes as is - we give reference to parent so any object can be changed directly.
-        // so lets detach from parent first
-        $object = array_pop($attributes)->detach();
-
-        // replace all children creating them from binary.
-        foreach ($object->getChildren() as $child) {
-            $binary = $child->getBinary();
-            $object->replaceChild($child, Sequence::fromBinary($binary));
-        }
-
-        return $object;
     }
 }

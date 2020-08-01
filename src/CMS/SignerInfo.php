@@ -54,18 +54,20 @@ class SignerInfo extends CMSBase
     public function getSignatureValue()
     {
         return bin2hex(
-            $this->object->findChildrenByType(OctetString::class)[0]->getBinaryContent()
+            $this->getSignature()->getBinaryContent()
         );
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return OctetString
+     * Signature as independent ASN.1 object
+     * @return OctetString|ASN1\ASN1ObjectInterface
      * @throws Exception
      */
     public function getSignature()
     {
-        return $this->object->findChildrenByType(OctetString::class)[0];
+        $binary = $this->object->findChildrenByType(OctetString::class)[0]->getBinary();
+
+        return OctetString::fromBinary($binary);
     }
 
     /**
@@ -99,7 +101,8 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * Signed Attributes
+     * Signed Attributes without parent reference
+     *
      * @return ExplicitlyTaggedObject|ASN1\ASN1ObjectInterface
      * @throws Exception
      */
@@ -111,17 +114,7 @@ class SignerInfo extends CMSBase
             return $value->getIdentifier()->getTagNumber() === 0;
         });
 
-        // if we return attributes as is - we give reference to parent so any object can be changed directly.
-        // so lets detach from parent first
-        $object = array_pop($attributes)->detach();
-
-        // now replace all children creating them from binary.
-        foreach ($object->getChildren() as $child) {
-            $binary = $child->getBinary();
-            $object->replaceChild($child, Sequence::fromBinary($binary));
-        }
-
-        return $object;
+        return $this->detachAllAttributes($attributes);
     }
 
     /**
@@ -267,8 +260,7 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * Unsigned Attributes
+     * Unsigned Attributes without parent reference
      * @return ExplicitlyTaggedObject
      * @throws Exception
      */
@@ -279,7 +271,7 @@ class SignerInfo extends CMSBase
             return $value->getIdentifier()->getTagNumber() === 1;
         });
 
-        return array_pop($attributes);
+        return $this->detachAllAttributes($attributes);
     }
 
     /**
@@ -513,5 +505,26 @@ class SignerInfo extends CMSBase
         $set->replaceChild($oldTimeStampResponse, ASN1\ASN1Object::fromBinary($binary));
 
         return;
+    }
+
+    /**
+     * @param ExplicitlyTaggedObject[] $attributes
+     * @return ExplicitlyTaggedObject|ASN1\ASN1ObjectInterface
+     * @throws ASN1\Exception\Exception
+     * @throws ParserException
+     */
+    protected function detachAllAttributes(iterable $attributes)
+    {
+        // if we return attributes as is - we give reference to parent so any object can be changed directly.
+        // so lets detach from parent first
+        $object = array_pop($attributes)->detach();
+
+        // replace all children creating them from binary.
+        foreach ($object->getChildren() as $child) {
+            $binary = $child->getBinary();
+            $object->replaceChild($child, Sequence::fromBinary($binary));
+        }
+
+        return $object;
     }
 }

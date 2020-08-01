@@ -99,19 +99,29 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
      * Signed Attributes
-     * @return ExplicitlyTaggedObject
+     * @return ExplicitlyTaggedObject|ASN1\ASN1ObjectInterface
      * @throws Exception
      */
     public function getSignedAttributes()
     {
         $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+        /** @var ExplicitlyTaggedObject[] $attributes */
         $attributes = array_filter($exTaggedObjects, function ($value) {
             return $value->getIdentifier()->getTagNumber() === 0;
         });
 
-        return array_pop($attributes);
+        // if we return attributes as is - we give reference to parent so any object can be changed directly.
+        // so lets detach from parent first
+        $object = array_pop($attributes)->detach();
+
+        // now replace all children creating them from binary.
+        foreach ($object->getChildren() as $child) {
+            $binary = $child->getBinary();
+            $object->replaceChild($child, Sequence::fromBinary($binary));
+        }
+
+        return $object;
     }
 
     /**

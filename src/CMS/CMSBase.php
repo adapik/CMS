@@ -29,25 +29,9 @@ abstract class CMSBase implements CMSInterface
      *
      * @param ASN1ObjectInterface $object
      */
-    public function __construct(ASN1ObjectInterface $object)
+    final public function __construct(ASN1ObjectInterface $object)
     {
         $this->object = $object;
-    }
-
-    /**
-     * @return string
-     */
-    public function getBinary()
-    {
-        return $this->object->getBinary();
-    }
-
-    /**
-     * @return string
-     */
-    public function getBinaryContent()
-    {
-        return $this->object->getBinaryContent();
     }
 
     /**
@@ -57,7 +41,8 @@ abstract class CMSBase implements CMSInterface
      * @return ASN1ObjectInterface
      * @throws FormatException
      */
-    protected static function makeFromContent(string $content, string $mapperClass, string $objectClass) {
+    final protected static function makeFromContent(string $content, string $mapperClass, string $objectClass)
+    {
         $object = ASN1Object::fromFile($content);
 
         if (!$object instanceof $objectClass) {
@@ -77,7 +62,24 @@ abstract class CMSBase implements CMSInterface
      * @param string $classname
      * @return false|string
      */
-    private static function className(string $classname) {
+    private static function className(string $classname)
+    {
         return (substr($classname, strrpos($classname, '\\') + 1));
+    }
+
+    /**
+     * @return string
+     */
+    final public function getBinary()
+    {
+        return $this->object->getBinary();
+    }
+
+    /**
+     * @return string
+     */
+    final public function getBinaryContent()
+    {
+        return $this->object->getBinaryContent();
     }
 }

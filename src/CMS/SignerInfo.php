@@ -71,13 +71,20 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * Signing cert hex digest
+     * Signing cert hex digest if signingCertificateV2 attribute exist
      * @return string
      * @throws Exception
      */
     public function getSigningCertDigest()
     {
-        $digest = (string)$this->getSigningCert()
+        $signingCertificateV2 = $this->signingCertificateV2();
+
+        if (!$signingCertificateV2)
+            return null;
+
+        $digest = (string)$signingCertificateV2
+            ->getChildren()[1]
+            ->getChildren()[0]
             ->getChildren()[0]
             ->getChildren()[0]
             ->findChildrenByType(OctetString::class)[0];
@@ -86,17 +93,18 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * Signing cert
-     * @return ASN1\Universal\Set
-     * @throws Exception
+     * signingCertificateV2  attribute independent from parent if exist
+     * @return Sequence|ASN1\ASN1ObjectInterface|null
+     * @throws ParserException
      */
-    private function getSigningCert()
+    public function signingCertificateV2()
     {
         $signingCert = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_CERTIFICATE_V2);
         if ($signingCert) {
-            return $signingCert[0]->getSiblings()[0]->findChildrenByType(Sequence::class)[0];
-        }
+            $binary = $signingCert[0]->getParent()->getBinary();
 
+            return Sequence::fromBinary($binary);
+        }
         return null;
     }
 
@@ -184,7 +192,7 @@ class SignerInfo extends CMSBase
      */
     private function isBES()
     {
-        if ($this->getSigningCert() && $this->getMessageDigest() && $this->getContentType()) {
+        if ($this->signingCertificateV2() && $this->getMessageDigest() && $this->getContentType()) {
             return true;
         }
 

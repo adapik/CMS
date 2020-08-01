@@ -176,7 +176,7 @@ class SignerInfo extends CMSBase
      * @return bool
      * @throws Exception
      */
-    private function isLongType1()
+    protected function isLongType1()
     {
         if ($this->isBES() && $this->isT() && $this->getEscTimeStampToken() && $this->hasEvidences()) {
             return true;
@@ -190,7 +190,7 @@ class SignerInfo extends CMSBase
      * @return bool
      * @throws Exception
      */
-    private function isBES()
+    protected function isBES()
     {
         if ($this->signingCertificateV2() && $this->getMessageDigest() && $this->getContentType()) {
             return true;
@@ -224,7 +224,7 @@ class SignerInfo extends CMSBase
      * @return ObjectIdentifier
      * @throws Exception
      */
-    private function getContentType()
+    protected function getContentType()
     {
         $contentType = $this->getSignedAttributes()->findByOid(self::OID_CONTENT_TYPE);
         if (!empty($contentType)) {
@@ -239,7 +239,7 @@ class SignerInfo extends CMSBase
      * @return bool
      * @throws Exception
      */
-    private function isT()
+    protected function isT()
     {
         if ($this->isBES() && $this->getUnsignedTimeStampToken()) {
             return true;
@@ -287,7 +287,7 @@ class SignerInfo extends CMSBase
      * @return ASN1\Object|null
      * @throws Exception
      */
-    private function getEscTimeStampToken()
+    protected function getEscTimeStampToken()
     {
         $attributes = $this->getUnsignedAttributes();
         if ($attributes) {
@@ -305,7 +305,7 @@ class SignerInfo extends CMSBase
      * @return bool
      * @throws Exception
      */
-    private function hasEvidences()
+    protected function hasEvidences()
     {
         $unsignedAttributes = $this->getUnsignedAttributes();
         if ($unsignedAttributes) {
@@ -394,7 +394,7 @@ class SignerInfo extends CMSBase
      * @return array
      * @throws Exception
      */
-    private function getOrCreateUnsignedAttributes(): array
+    protected function getOrCreateUnsignedAttributes(): array
     {
         /**
          * 1. First check do we have unsignedAttrs or not, cause it is optional fields and create it if not.
@@ -418,7 +418,7 @@ class SignerInfo extends CMSBase
     /**
      * @return ASN1\ImplicitlyTaggedObject
      */
-    private function createUnsignedAttribute()
+    protected function createUnsignedAttribute()
     {
         return ExplicitlyTaggedObject::create(1, ASN1\Universal\NullObject::create());
     }
@@ -494,9 +494,10 @@ class SignerInfo extends CMSBase
 
     /**
      * FIXME: replaceChild
-     * @param int $index
+     * @param TimeStampResponse $oldTimeStampResponse
      * @param TimeStampResponse $newTimeStampResponse
-     * @throws ASN1\Exception\ParserException
+     * @throws ASN1\Exception\Exception
+     * @throws ParserException
      */
     public function replaceUnsignedTimeStampToken(TimeStampResponse $oldTimeStampResponse, TimeStampResponse $newTimeStampResponse)
     {

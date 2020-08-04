@@ -140,6 +140,13 @@ class SignerInfo extends CMSBase
         // That's why we have to create new object from binary
         // 2. When we sign signed attributes, we use Set not ExplicitlyTaggedObject !IMPORTANT
         // @see https://tools.ietf.org/html/rfc5652#section-5.4
+        //   A separate encoding
+        //   of the signedAttrs field is performed for message digest calculation.
+        //   The IMPLICIT [0] tag in the signedAttrs is not used for the DER
+        //   encoding, rather an EXPLICIT SET OF tag is used.  That is, the DER
+        //   encoding of the EXPLICIT SET OF tag, rather than of the IMPLICIT [0]
+        //   tag, MUST be included in the message digest calculation along with
+        //   the length and content octets of the SignedAttributes value.
 
         $binary = $attributes->getBinary();
         $object = ASN1\ASN1Object::fromBinary($binary);
@@ -297,12 +304,21 @@ class SignerInfo extends CMSBase
      */
     public function getUnsignedAttributes()
     {
+        return $this->convertAttributesToSet($this->getUnsignedAttributesPrivate());
+    }
+
+    /**
+     * @return ExplicitlyTaggedObject
+     * @throws Exception
+     */
+    protected function getUnsignedAttributesPrivate()
+    {
         $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         $attributes = array_filter($exTaggedObjects, function ($value) {
             return $value->getIdentifier()->getTagNumber() === 1;
         });
 
-        return $this->convertAttributesToSet(array_pop($attributes));
+        return array_pop($attributes);
     }
 
     /**
@@ -367,24 +383,17 @@ class SignerInfo extends CMSBase
      * @param BasicOCSPResponse[] $basicOCSPResponses
      * @return bool
      * @throws Exception
+     * @todo move to extended package
      */
     public function addUnsignedRevocationValues(array $basicOCSPResponses)
     {
         /**
-         * 1. Get or create unsigned attributes
+         * 1. create unsigned attributes
          */
-        [$UnsignedAttribute, $unsignedSelfCreated] = $this->getOrCreateUnsignedAttributes();
+        $this->createUnsignedAttributesIfNotExist();
 
         /**
-         * 2. Now check do we have to check existence of 1.2.840.113549.1.9.16.2.24 in attributes
-         */
-        // FIXME: добавлять в массив
-        if (count($UnsignedAttribute->findByOid(RevocationValues::getOid())) > 0) {
-            throw new Exception("You already have RevocationValues in UnsignedAttributes");
-        }
-
-        /**
-         * 3. Now if we don't have, lets create RevocationValues object
+         * 2. Now if we don't have, lets create RevocationValues object
          */
         $responses = [];
         foreach ($basicOCSPResponses as $basicOCSPResponse) {
@@ -404,20 +413,18 @@ class SignerInfo extends CMSBase
         /**
          * 4. Finally insert it into $UnsignedAttribute.
          */
-        if ($unsignedSelfCreated) {
-            $UnsignedAttribute->replaceChild(0, $revocationValues);
-        } else {
-            $UnsignedAttribute->appendChild($revocationValues);
-        }
+
+        $this->getUnsignedAttributesPrivate()->appendChild($revocationValues);
 
         return true;
     }
 
     /**
-     * @return array
+     * @return void
      * @throws Exception
+     * @todo move to extended package
      */
-    protected function getOrCreateUnsignedAttributes(): array
+    protected function createUnsignedAttributesIfNotExist(): void
     {
         /**
          * 1. First check do we have unsignedAttrs or not, cause it is optional fields and create it if not.
@@ -425,21 +432,17 @@ class SignerInfo extends CMSBase
          */
         $UnsignedAttribute = $this->getUnsignedAttributes();
 
-        $unsignedSelfCreated = false;
-
         if (is_null($UnsignedAttribute)) {
             $UnsignedAttribute = $this->createUnsignedAttribute();
-            $unsignedSelfCreated = true;
             $this->object->appendChild($UnsignedAttribute);
         }
 
-        $UnsignedAttribute = $this->getUnsignedAttributes();
-
-        return array($UnsignedAttribute, $unsignedSelfCreated);
+        return;
     }
 
     /**
      * @return ASN1\ImplicitlyTaggedObject
+     * @todo move to extended package
      */
     protected function createUnsignedAttribute()
     {
@@ -477,16 +480,16 @@ class SignerInfo extends CMSBase
      *
      * @param TimeStampResponse[] $timeStampResponses
      * @throws Exception
+     * @todo move to extended package
      */
     public function addUnsignedTimeStampToken(array $timeStampResponses)
     {
-        /** @var bool $unsignedSelfCreated */
-        [$UnsignedAttribute, $unsignedSelfCreated] = $this->getOrCreateUnsignedAttributes();
+        $this->createUnsignedAttributesIfNotExist();
 
         /**
          * 2. Now check do we have to check existence of 1.2.840.113549.1.9.16.2.14 in attributes
          */
-        $timeStampTokenSearch = $UnsignedAttribute->findByOid(TimeStampToken::getOid());
+        $timeStampTokenSearch = $this->getUnsignedAttributesPrivate()->findByOid(TimeStampToken::getOid());
         if (count($timeStampTokenSearch) > 0) {
 
             $set = $timeStampTokenSearch[0]->getParent()->getChildren()[1];
@@ -505,11 +508,8 @@ class SignerInfo extends CMSBase
                 $timeStampToken->getChildren()[1]->appendChild(ASN1\ASN1Object::fromBinary($binary));
             }
 
-            if ($unsignedSelfCreated) {
-                $UnsignedAttribute->replaceChild(0, $timeStampToken);
-            } else {
-                $UnsignedAttribute->appendChild($timeStampToken);
-            }
+            $this->getUnsignedAttributesPrivate()->appendChild($timeStampToken);
+
         }
 
         return;
@@ -521,10 +521,11 @@ class SignerInfo extends CMSBase
      * @param TimeStampResponse $newTimeStampResponse
      * @throws ASN1\Exception\Exception
      * @throws ParserException
+     * @todo move to extended package
      */
     public function replaceUnsignedTimeStampToken(TimeStampResponse $oldTimeStampResponse, TimeStampResponse $newTimeStampResponse)
     {
-        $UnsignedAttribute = $this->getUnsignedAttributes();
+        $UnsignedAttribute = $this->getUnsignedAttributesPrivate();
 
         $timeStampTokenSearch = $UnsignedAttribute->findByOid(TimeStampToken::getOid());
 

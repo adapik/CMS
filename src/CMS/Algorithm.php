@@ -26,6 +26,7 @@ class Algorithm
     const OID_RIPEMD128 = "1.3.36.3.2.2";
     const OID_RIPEMD256 = "1.3.36.3.2.3";
     const OID_GOST34_311_95 = "1.2.398.3.10.1.3.1";
+    const OID_GOST34_11_94 = "1.2.643.2.2.9";
 
     /**
      * @param string $oid
@@ -59,6 +60,7 @@ class Algorithm
             case self::OID_RIPEMD256:
                 return 'ripemd256';
             case self::OID_GOST34_311_95:
+            case self::OID_GOST34_11_94:
                 return 'gost';
             default:
                 throw new FormatException('Unknown hash algorithm');

@@ -112,22 +112,4 @@ class SignedData extends CMSBase
         }
         return $data;
     }
-
-    /**
-     * Removing content if exist in case of necessity.
-     * Actually we sign content hash and storing content not always strict.
-     * Moreover content can be very huge and heavy
-     */
-    public function removeEncapsulatedContentInfoEContent()
-    {
-        $data = $this->object->findByOid(self::OID_DATA);
-        $content = $data[0];
-
-        $siblings = $content->getSiblings();
-        if (count($siblings) > 0) {
-            $siblings[0]->remove();
-        }
-
-        return;
-    }
 }

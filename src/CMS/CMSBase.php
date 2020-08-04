@@ -29,7 +29,7 @@ abstract class CMSBase implements CMSInterface
      *
      * @param ASN1ObjectInterface $object
      */
-    final public function __construct(ASN1ObjectInterface $object)
+    public function __construct(ASN1ObjectInterface $object)
     {
         $this->object = $object;
     }

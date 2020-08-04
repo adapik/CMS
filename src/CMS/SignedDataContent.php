@@ -56,6 +56,7 @@ class SignedDataContent extends CMSBase
     }
 
     /**
+     * @see Maps\EncapsulatedContentInfo
      * @return EncapsulatedContentInfo
      * @throws Exception
      */

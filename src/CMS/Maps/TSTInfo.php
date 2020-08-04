@@ -18,6 +18,7 @@ abstract class TSTInfo
      * TSTInfo ::= SEQUENCE  {
      *      version                      INTEGER  { v1(1) },
      *      policy                       TSAPolicyId,
+     *      -- алгоритм и хэш данных
      *      messageImprint               MessageImprint,
      *      serialNumber                 INTEGER,
      *      genTime                      GeneralizedTime,

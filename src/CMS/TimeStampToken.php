@@ -63,7 +63,7 @@ class TimeStampToken extends UnsignedAttribute
 
         foreach ($signedData as $data) {
             $EContent = $data->getSignedDataContent()->getEncapsulatedContentInfo()->getEContent();
-            $TSTInfo[] = TSTInfo::createFromContent($EContent[0]->getBinaryContent());
+            $TSTInfo[] = TSTInfo::createFromContent($EContent->getBinaryContent());
         }
 
         return $TSTInfo;

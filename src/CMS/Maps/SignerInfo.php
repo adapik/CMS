@@ -51,12 +51,7 @@ class SignerInfo
                 ] + Attributes::MAP,
             'signatureAlgorithm' => AlgorithmIdentifier::MAP,
             'signature' => ['type' => Identifier::OCTETSTRING],
-            'unsignedAttrs' => [
-                    'constant' => 1,
-                    'optional' => true,
-                    'implicit' => true
-                ] + Attributes::MAP
-            ,
+            'unsignedAttrs' => UnsignedAttributes::MAP,
         ]
     ];
 }

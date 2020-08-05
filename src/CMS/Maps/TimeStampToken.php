@@ -21,7 +21,7 @@ abstract class TimeStampToken extends Attribute
             'content' => [
                 'type' => Identifier::SET,
                 'min' => 1,
-                'max' => -1,
+                'max' => 1,
                 'children' => SignedData::MAP
             ]
         ]

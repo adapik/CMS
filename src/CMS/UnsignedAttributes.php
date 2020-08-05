@@ -1,0 +1,146 @@
+<?php
+/**
+ * UnsignedAttributes
+ *
+ * @author    Nurlan Mukhanov <nurike@gmail.com>
+ * @copyright 2020 Nurlan Mukhanov
+ * @license   https://en.wikipedia.org/wiki/MIT_License MIT License
+ * @link      https://github.com/Adapik/CMS
+ */
+
+namespace Adapik\CMS;
+
+use FG\ASN1\ASN1ObjectInterface;
+use FG\ASN1\Exception\ParserException;
+use FG\ASN1\ExplicitlyTaggedObject;
+use FG\ASN1\Universal\Sequence;
+
+/**
+ * Class UnsignedAttributes
+ *
+ * @see     Maps\UnsignedAttributes
+ * @package Adapik\CMS
+ */
+class UnsignedAttributes extends CMSBase
+{
+    /**
+     * @var ExplicitlyTaggedObject
+     */
+    protected $object;
+
+    /**
+     * @param string $content
+     *
+     * @return UnsignedAttributes
+     * @throws Exception\FormatException
+     */
+    public static function createFromContent(string $content)
+    {
+        return new self(self::makeFromContent($content, Maps\UnsignedAttributes::class, ExplicitlyTaggedObject::class));
+    }
+
+    /**
+     * @param string $oid
+     * @return ASN1ObjectInterface|Sequence|null
+     * @throws ParserException
+     */
+    public function getByOid(string $oid)
+    {
+        return $this->getAttributeAsObject($oid);
+    }
+
+    /**
+     * @param $oid
+     * @return Sequence|ASN1ObjectInterface|null
+     * @throws ParserException
+     */
+    private function getAttributeAsObject($oid)
+    {
+        $attribute = $this->findByOid($oid);
+
+        if ($attribute) {
+            $binary = $attribute->getParent()->getBinary();
+            return Sequence::fromBinary($binary);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param $oid
+     * @return ASN1ObjectInterface|null
+     */
+    private function findByOid($oid)
+    {
+        $child = $this->object->findByOid($oid);
+
+        return $child ? $child[0] : null;
+    }
+
+    /**
+     * @return ASN1ObjectInterface|Sequence|null
+     * @throws ParserException
+     */
+    public function getCertificateRefs()
+    {
+        return $this->getAttributeAsObject(CompleteCertificateRefs::getOid());
+    }
+
+    /**
+     * @return ASN1ObjectInterface|Sequence|null
+     * @throws ParserException
+     */
+    public function getRevocationRefs()
+    {
+        return $this->getAttributeAsObject(CompleteRevocationRefs::getOid());
+    }
+
+    /**
+     * @return ASN1ObjectInterface|Sequence|null
+     * @throws ParserException
+     */
+    public function getCertificateValues()
+    {
+        return $this->getAttributeAsObject(CertificateValues::getOid());
+    }
+
+    /**
+     * @return ASN1ObjectInterface|Sequence|null
+     * @throws ParserException
+     */
+    public function getEscTimeStamp()
+    {
+        return $this->getAttributeAsObject(EscTimeStamp::getOid());
+    }
+
+    /**
+     * @return RevocationValues|null|CMSInterface
+     */
+    public function getRevocationValues()
+    {
+        return $this->getAttributeAsInstance(RevocationValues::class);
+    }
+
+    /**
+     * @param string $class
+     * @return CMSInterface|null
+     */
+    private function getAttributeAsInstance(string $class)
+    {
+        $attribute = $this->findByOid(call_user_func($class . '::getOid'));
+
+        if ($attribute) {
+            return new $class($attribute->getParent());
+        }
+
+        return null;
+    }
+
+    /**
+     * @return TimeStampToken|null|CMSInterface
+     */
+    public function getTimeStampToken()
+    {
+        return $this->getAttributeAsInstance(TimeStampToken::class);
+    }
+}

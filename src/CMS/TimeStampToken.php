@@ -52,34 +52,26 @@ class TimeStampToken extends UnsignedAttribute
     }
 
     /**
-     * @return TSTInfo[]
+     * @return TSTInfo
      * @throws FormatException
      * @throws ParserException
      */
     public function getTSTInfo()
     {
-        $TSTInfo = [];
         $signedData = $this->getSignedData();
 
-        foreach ($signedData as $data) {
-            $EContent = $data->getSignedDataContent()->getEncapsulatedContentInfo()->getEContent();
-            $TSTInfo[] = TSTInfo::createFromContent($EContent->getBinaryContent());
-        }
+        $EContent = $signedData->getSignedDataContent()->getEncapsulatedContentInfo()->getEContent();
 
-        return $TSTInfo;
+        return TSTInfo::createFromContent($EContent->getBinaryContent());
     }
 
     /**
-     * @return SignedData[]
+     * @return SignedData
      */
     public function getSignedData()
     {
-        $SignedData = [];
-        $children = $this->object->getChildren()[1]->getChildren();
-        foreach ($children as $child) {
-            $SignedData[] = new SignedData($child);
-        }
+        $child = $this->object->getChildren()[1]->getChildren()[0];
 
-        return $SignedData;
+        return new SignedData($child);
     }
 }

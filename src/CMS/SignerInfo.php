@@ -207,7 +207,7 @@ class SignerInfo extends CMSBase
      */
     protected function isLongType1()
     {
-        if ($this->isBES() && $this->isT() && $this->getEscTimeStampToken() && $this->hasEvidences()) {
+        if ($this->isBES() && $this->isT() && $this->getUnsignedAttributes()->getEscTimeStamp() && $this->hasEvidences()) {
             return true;
         }
 
@@ -270,7 +270,7 @@ class SignerInfo extends CMSBase
      */
     protected function isT()
     {
-        if ($this->isBES() && $this->getUnsignedTimeStampToken()) {
+        if ($this->isBES() && $this->getUnsignedAttributes()->getTimeStampToken()) {
             return true;
         }
 
@@ -278,33 +278,19 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * @return TimeStampToken|null
-     * @throws Exception
-     */
-    public function getUnsignedTimeStampToken()
-    {
-        $attributes = $this->getUnsignedAttributes();
-
-        if ($attributes) {
-            $rv = $attributes->findByOid(TimeStampToken::getOid());
-
-            if ($rv) {
-                return new TimeStampToken($rv[0]->getParent());
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Unsigned Attributes without parent reference
      *
-     * @return Set|ASN1\ASN1ObjectInterface
+     * @return UnsignedAttributes
      * @throws Exception
      */
     public function getUnsignedAttributes()
     {
-        return $this->convertAttributesToSet($this->getUnsignedAttributesPrivate());
+        $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+        $attributes = array_filter($exTaggedObjects, function ($value) {
+            return $value->getIdentifier()->getTagNumber() === 1;
+        });
+
+        return new UnsignedAttributes(array_pop($attributes));
     }
 
     /**
@@ -323,20 +309,15 @@ class SignerInfo extends CMSBase
 
     /**
      * Esc-Timestamp Attribute
-     * @return ASN1\Object|null
+     * @return ASN1ObjectInterface|Sequence|null
      * @throws Exception
+     * @see UnsignedAttributes::getEscTimeStamp()
+     * @example $signerInfo->getUnsignedAttributes()->getEscTimeStamp()
+     * @deprecated
      */
     protected function getEscTimeStampToken()
     {
-        $attributes = $this->getUnsignedAttributes();
-        if ($attributes) {
-            $ts = $attributes->findByOid(EscTimeStamp::getOid());
-            if ($ts) {
-                return $ts[0]->getSiblings()[0]->findChildrenByType(Sequence::class)[0];
-            }
-        }
-
-        return null;
+        return $this->getUnsignedAttributes()->getEscTimeStamp();
     }
 
     /**
@@ -348,10 +329,10 @@ class SignerInfo extends CMSBase
     {
         $unsignedAttributes = $this->getUnsignedAttributes();
         if ($unsignedAttributes) {
-            $revValues = $unsignedAttributes->findByOid(RevocationValues::getOid());
-            $revRefs = $unsignedAttributes->findByOid(CompleteRevocationRefs::getOid());
-            $certValues = $unsignedAttributes->findByOid(CertificateValues::getOid());
-            $certRefs = $unsignedAttributes->findByOid(CompleteCertificateRefs::getOid());
+            $revValues = $unsignedAttributes->getRevocationValues();
+            $revRefs = $unsignedAttributes->getRevocationRefs();
+            $certValues = $unsignedAttributes->getCertificateValues();
+            $certRefs = $unsignedAttributes->getCertificateRefs();
             if (!empty($revValues) && !empty($revRefs) && !empty($certValues) && !empty($certRefs)) {
                 return true;
             }
@@ -376,36 +357,28 @@ class SignerInfo extends CMSBase
         return null;
     }
 
-    /**
-     * Sometimes having Cryptographic Message Syntax (CMS) we need to store OCSP check response for the
-     * signer certificate, otherwise CMS data means nothing.
-     *
-     * @param BasicOCSPResponse[] $basicOCSPResponses
-     * @return bool
-     * @throws Exception
-     * @todo move to extended package
-     */
-    public function addUnsignedRevocationValues(array $basicOCSPResponses)
+	/**
+	 * Sometimes having Cryptographic Message Syntax (CMS) we need to store OCSP check response for the
+	 * signer certificate, otherwise CMS data means nothing.
+	 *
+	 * @param BasicOCSPResponse $basicOCSPResponse
+	 *
+	 * @return bool
+	 * @throws Exception
+	 * @todo move to extended package
+	 */
+    public function addRevocationValuesAttribute(BasicOCSPResponse $basicOCSPResponse)
     {
         /**
          * 1. create unsigned attributes
          */
         $this->createUnsignedAttributesIfNotExist();
 
-        /**
-         * 2. Now if we don't have, lets create RevocationValues object
-         */
-        $responses = [];
-        foreach ($basicOCSPResponses as $basicOCSPResponse) {
-            $binary = $basicOCSPResponse->getBinary();
-            $responses[] = ASN1\ASN1Object::fromBinary($binary);
-        }
-
-        $revocationValues = Sequence::create([
+        $revocationValue = Sequence::create([
             ObjectIdentifier::create(RevocationValues::getOid()),
             Set::create([
                 Sequence::create([
-                    ExplicitlyTaggedObject::create(1, Sequence::create($responses))
+                    ExplicitlyTaggedObject::create(1, Sequence::create([$basicOCSPResponse->getBinary()]))
                 ])
             ])
         ]);
@@ -414,7 +387,7 @@ class SignerInfo extends CMSBase
          * 4. Finally insert it into $UnsignedAttribute.
          */
 
-        $this->getUnsignedAttributesPrivate()->appendChild($revocationValues);
+        $this->getUnsignedAttributesPrivate()->appendChild($revocationValue);
 
         return true;
     }
@@ -436,8 +409,6 @@ class SignerInfo extends CMSBase
             $UnsignedAttribute = $this->createUnsignedAttribute();
             $this->object->appendChild($UnsignedAttribute);
         }
-
-        return;
     }
 
     /**
@@ -450,37 +421,11 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * @return RevocationValues[]|null
-     * @throws Exception
-     */
-    public function getUnsignedRevocationValues()
-    {
-        $attributes = $this->getUnsignedAttributes();
-        $values = [];
-        if ($attributes) {
-            $rv = $attributes->findByOid(RevocationValues::getOid());
-
-            if ($rv) {
-                /** @var Set $set */
-                $set = $rv[0]->getParent()->findChildrenByType(Set::class)[0];
-
-                /** @var Sequence $child */
-                foreach ($set->getChildren() as $child) {
-                    $values[] = new RevocationValues($child);
-                }
-                return $values;
-            }
-        }
-
-        return [];
-    }
-
-    /**
      * This function will append TimeStampToken with TSTInfo or create TimeStampToken as UnsignedAttribute
      *
      * @param TimeStampResponse[] $timeStampResponses
      * @throws Exception
-     * @todo move to extended package
+     * @todo move to extended package and move to TimeStampToken
      */
     public function addUnsignedTimeStampToken(array $timeStampResponses)
     {
@@ -511,8 +456,6 @@ class SignerInfo extends CMSBase
             $this->getUnsignedAttributesPrivate()->appendChild($timeStampToken);
 
         }
-
-        return;
     }
 
     /**
@@ -537,6 +480,5 @@ class SignerInfo extends CMSBase
         $binary = $newTimeStampResponse->getTimeStampToken()->getBinary();
         $set->replaceChild($oldTimeStampResponse, ASN1\ASN1Object::fromBinary($binary));
 
-        return;
     }
 }

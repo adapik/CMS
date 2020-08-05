@@ -15,17 +15,17 @@ use FG\ASN1\Identifier;
 abstract class RevocationValues
 {
     /**
+     * @see BasicOCSPResponse
+     * @see CertificateList
      * RevocationValues ::=  SEQUENCE {
      *      certificateList         [0] SEQUENCE OF CertificateList OPTIONAL,
      *      basicOCSPResponses      [1] SEQUENCE OF BasicOCSPResponse OPTIONAL,
      *      otherRevValues          [2] OtherRevVals OPTIONAL
      * }
-     *
      * OtherRevVals ::= SEQUENCE {
      *      OtherRevValType   OtherRevValType,
      *      OtherRevVals      ANY DEFINED BY OtherRevValType
      * }
-     *
      * OtherRevValType ::= OBJECT IDENTIFIER
      */
 
@@ -39,7 +39,7 @@ abstract class RevocationValues
                 'optional' => true,
                 'min' => 1,
                 'max' => -1,
-                'children' => CertificateList::MAP
+                'children' => CertificateList::MAP,
             ],
             'basicOCSPResponses' => [
                 'type' => Identifier::SEQUENCE,
@@ -48,7 +48,7 @@ abstract class RevocationValues
                 'optional' => true,
                 'min' => 1,
                 'max' => -1,
-                'children' => BasicOCSPResponse::MAP
+                'children' => BasicOCSPResponse::MAP,
             ],
             'otherRevValues' => [
                 'type' => Identifier::SEQUENCE,
@@ -57,8 +57,8 @@ abstract class RevocationValues
                 'children' => [
                     'OtherRevValType' => ['type' => Identifier::OBJECT_IDENTIFIER],
                     'OtherRevVals' => ['type' => Identifier::ANY],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     ];
 }

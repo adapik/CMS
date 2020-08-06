@@ -144,37 +144,65 @@ class UnsignedAttributes extends CMSBase
         return null;
     }
 
-	/**
-	 * Sometimes having Cryptographic Message Syntax (CMS) we need to store OCSP check response for the
-	 * signer certificate, otherwise CMS data means nothing.
-	 *
-	 * @param BasicOCSPResponse $basicOCSPResponse
-	 *
-	 * @return UnsignedAttributes
-	 * @throws Exception
-	 * @throws ParserException
-	 * @todo move to extended package
-	 */
-    public function setRevocationValues(BasicOCSPResponse $basicOCSPResponse)
+    /**
+     * Sometimes having Cryptographic Message Syntax (CMS) we need to store OCSP check response for the
+     * signer certificate, otherwise CMS data means nothing.
+     *
+     * @param BasicOCSPResponse|null $basicOCSPResponse
+     *
+     * @param CertificateList|null $certificateList
+     * @param Sequence|null $otherRevVals
+     * @return UnsignedAttributes
+     * @throws Exception
+     * @throws ParserException
+     * @see Maps\RevocationValues
+     * @todo move to extended package
+     */
+    public function setRevocationValues(?BasicOCSPResponse $basicOCSPResponse = null, ?CertificateList $certificateList = null, ?Sequence $otherRevVals = null)
     {
-        $binary = $basicOCSPResponse->getBinary();
+        $values = [];
 
-		$revocationValues = Sequence::create([
-			ObjectIdentifier::create(RevocationValues::getOid()),
-			Set::create([
-				Sequence::create([
-					ExplicitlyTaggedObject::create(1,
-						Sequence::create([
-							Sequence::fromBinary($binary),
-						]
-						)
-					),
-				]
-				),
-			]
-			),
-		]
-		);
+        if (!is_null($basicOCSPResponse)) {
+            $binary = $basicOCSPResponse->getBinary();
+
+            $values[] = ExplicitlyTaggedObject::create(1,
+                Sequence::create([
+                        Sequence::fromBinary($binary),
+                    ]
+                )
+            );
+        }
+
+        if (!is_null($certificateList)) {
+            $binary = $certificateList->getBinary();
+
+            $values[] = ExplicitlyTaggedObject::create(0,
+                Sequence::create([
+                        Sequence::fromBinary($binary),
+                    ]
+                )
+            );
+        }
+
+        if (!is_null($otherRevVals)) {
+            $binary = $otherRevVals->getBinary();
+
+            $values[] = ExplicitlyTaggedObject::create(2,
+                Sequence::create([
+                        Sequence::fromBinary($binary),
+                    ]
+                )
+            );
+        }
+
+        $revocationValues = Sequence::create([
+                ObjectIdentifier::create(RevocationValues::getOid()),
+                Set::create([
+                        Sequence::create($values),
+                    ]
+                ),
+            ]
+        );
 
         $current = $this->findByOid(RevocationValues::getOid());
 
@@ -193,5 +221,35 @@ class UnsignedAttributes extends CMSBase
     public function getTimeStampToken()
     {
         return $this->getAttributeAsInstance(TimeStampToken::class);
+    }
+
+    /**
+     * This function will append TimeStampToken with TSTInfo or create TimeStampToken as UnsignedAttribute
+     *
+     * @param TimeStampResponse $response
+     * @return UnsignedAttributes
+     * @throws Exception
+     * @throws ParserException
+     * @todo move to extended package
+     */
+    public function setTimeStampToken(TimeStampResponse $response)
+    {
+        $binary = $response->getTimeStampToken()->getBinary();
+
+        $timeStampToken = Sequence::create([
+                ObjectIdentifier::create(TimeStampToken::getOid()),
+                Set::create([Sequence::fromBinary($binary)]),
+            ]
+        );
+
+        $current = $this->findByOid(TimeStampToken::getOid());
+
+        if ($current) {
+            $this->object->replaceChild($current, $timeStampToken);
+        } else {
+            $this->object->appendChild($timeStampToken);
+        }
+
+        return $this;
     }
 }

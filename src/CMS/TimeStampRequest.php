@@ -12,9 +12,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
-use FG\ASN1\ASN1Object;
 use FG\ASN1\ImplicitlyTaggedObject;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\Boolean;
 use FG\ASN1\Universal\Integer;
 use FG\ASN1\Universal\NullObject;
@@ -82,19 +80,7 @@ class TimeStampRequest extends RequestModel
      */
     public function processRequest(array $urls)
     {
-        $this->processErrors = [];
 
-        foreach ($urls as $url) {
-
-            $result = $this->curlRequest($url, $this->object->getBinary(), self::CONTENT_TYPE, TimeStampResponse::CONTENT_TYPE);
-
-            // Actually we need only 1 response, and if array is not set - we do not have any errors
-            if (!isset($this->processErrors[$url]) && !is_null($result)) {
-                return TimeStampResponse::createFromContent($result);
-            }
-        }
-
-        return null;
     }
 
     /**

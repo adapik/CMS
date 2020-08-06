@@ -11,12 +11,8 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
-use Exception;
 use FG\ASN1\Exception\ParserException;
-use FG\ASN1\Universal\NullObject;
-use FG\ASN1\Universal\ObjectIdentifier;
 use FG\ASN1\Universal\Sequence;
-use FG\ASN1\Universal\Set;
 
 /**
  * Class TimeStampToken
@@ -36,19 +32,6 @@ class TimeStampToken extends UnsignedAttribute
     public static function createFromContent(string $content)
     {
         return new self(self::makeFromContent($content, Maps\TimeStampToken::class, Sequence::class));
-    }
-
-    /**
-     * @return Sequence
-     * @throws Exception
-     */
-    public static function createEmpty()
-    {
-        return Sequence::create([
-                ObjectIdentifier::create(self::getOid()),
-                Set::create([NullObject::create()]),
-            ]
-        );
     }
 
     /**

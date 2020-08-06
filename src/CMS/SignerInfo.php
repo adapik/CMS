@@ -5,6 +5,7 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use Exception;
 use FG\ASN1;
+use FG\ASN1\AbstractTaggedObject;
 use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;
@@ -384,64 +385,35 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * This function will append TimeStampToken with TSTInfo or create TimeStampToken as UnsignedAttribute
-     *
-     * @param TimeStampResponse[] $timeStampResponses
-     * @throws Exception
-     * @todo move to extended package and move to TimeStampToken
+     * @return IssuerAndSerialNumber|null
      */
-    public function addUnsignedTimeStampToken(array $timeStampResponses)
+    public function getIssuerAndSerialNumber()
     {
-        $this->createUnsignedAttributesIfNotExist();
+        $identifier = $this->object->getChildren()[1];
 
-        /**
-         * 2. Now check do we have to check existence of 1.2.840.113549.1.9.16.2.14 in attributes
-         */
-        $timeStampTokenSearch = $this->getUnsignedAttributesPrivate()->findByOid(TimeStampToken::getOid());
-        if (count($timeStampTokenSearch) > 0) {
-
-            $set = $timeStampTokenSearch[0]->getParent()->getChildren()[1];
-
-            foreach ($timeStampResponses as $timeStampResponse) {
-                $binary = $timeStampResponse->getTimeStampToken()->getBinary();
-                $set->appendChild(ASN1\ASN1Object::fromBinary($binary));
-            }
-
-        } else {
-            $timeStampToken = TimeStampToken::createEmpty();
-            $timeStampToken->getChildren()[1]->getChildren()[0]->remove();
-
-            foreach ($timeStampResponses as $timeStampResponse) {
-                $binary = $timeStampResponse->getTimeStampToken()->getBinary();
-                $timeStampToken->getChildren()[1]->appendChild(ASN1\ASN1Object::fromBinary($binary));
-            }
-
-            $this->getUnsignedAttributesPrivate()->appendChild($timeStampToken);
-
+        // issuerAndSerialNumber
+        if ($identifier instanceof Sequence) {
+            return new IssuerAndSerialNumber($identifier);
         }
+
+        return null;
     }
 
     /**
-     * FIXME: replaceChild
-     * @param TimeStampResponse $oldTimeStampResponse
-     * @param TimeStampResponse $newTimeStampResponse
-     * @throws ASN1\Exception\Exception
+     * @return OctetString|ASN1ObjectInterface|null
      * @throws ParserException
-     * @todo move to extended package
      */
-    public function replaceUnsignedTimeStampToken(TimeStampResponse $oldTimeStampResponse, TimeStampResponse $newTimeStampResponse)
+    public function getSubjectKeyIdentifier()
     {
-        $UnsignedAttribute = $this->getUnsignedAttributesPrivate();
+        $identifier = $this->object->getChildren()[1];
 
-        $timeStampTokenSearch = $UnsignedAttribute->findByOid(TimeStampToken::getOid());
+        // subjectKeyIdentifier
+        if ($identifier instanceof AbstractTaggedObject) {
+            $binary = $identifier->getBinary();
 
-        if (count($timeStampTokenSearch) == 0) {
-            throw new Exception("No TimeStampToken found");
+            return OctetString::fromBinary($binary);
         }
 
-        $set = $timeStampTokenSearch[0]->getParent()->getChildren()[1];
-        $binary = $newTimeStampResponse->getTimeStampToken()->getBinary();
-        $set->replaceChild($oldTimeStampResponse, ASN1\ASN1Object::fromBinary($binary));
-
+        return null;
     }
 }

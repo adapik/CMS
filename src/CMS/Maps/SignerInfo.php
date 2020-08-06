@@ -30,13 +30,7 @@ class SignerInfo
             'signerIdentifier' => [
                 'type' => Identifier::CHOICE,
                 'children' => [
-                    'issuerAndSerialNumber' => [
-                        'type' => Identifier::SEQUENCE,
-                        'children' => [
-                            'issuer' => Name::MAP,
-                            'serialNumber' => CertificateSerialNumber::MAP
-                        ]
-                    ],
+                    'issuerAndSerialNumber' => IssuerAndSerialNumber::MAP,
                     'subjectKeyIdentifier' => [
                             'constant' => 0,
                             'implicit' => true

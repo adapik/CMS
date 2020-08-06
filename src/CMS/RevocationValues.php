@@ -11,10 +11,11 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Exception;
 use FG\ASN1\ASN1Object;
 use FG\ASN1\ExplicitlyTaggedObject;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\Sequence;
+use FG\ASN1\Universal\Set;
 
 /**
  * Class RevocationValues
@@ -24,15 +25,15 @@ use FG\ASN1\Universal\Sequence;
  */
 class RevocationValues extends UnsignedAttribute
 {
+    protected static $oid = '1.2.840.113549.1.9.16.2.24';
     /**
      * @var Sequence
      */
     protected $object;
 
-    protected static $oid = '1.2.840.113549.1.9.16.2.24';
-
     /**
      * @param string $content
+     *
      * @return RevocationValues
      * @throws FormatException
      */
@@ -42,61 +43,54 @@ class RevocationValues extends UnsignedAttribute
     }
 
     /**
-     * FIXME: shouldn't be created from content
-     * @return CertificateList[]|null
-     * @throws FormatException
+     * @return BasicOCSPResponse|null
+     * @throws Exception
      */
-    public function getCertificateList()
+    public function getBasicOCSPResponse()
     {
-        /** @var ExplicitlyTaggedObject $tagged */
-        $tagged = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+        $basicOCSPResponse = $this->getDataByTag(1);
 
-        foreach ($tagged as $object) {
-            if ($object->getIdentifier()->getTagNumber() == 0) {
-
-                /** @var CertificateList[] $CertificateList */
-                $CertificateList = [];
-
-                /** @var Sequence $children */
-                $children = $object->getChildren();
-
-                foreach ($children as $child) {
-                    $CertificateList[] = CertificateList::createFromContent($child->getBinaryContent());
-                }
-
-                return $CertificateList;
-            }
-        }
+        if ($basicOCSPResponse)
+            return new BasicOCSPResponse($basicOCSPResponse);
 
         return null;
     }
 
     /**
-     * FIXME: shouldn't be created from content
-     * @return BasicOCSPResponse[]|null
-     * @throws FormatException
+     * @param int $tagNumber
+     * @return ASN1Object|mixed|null
+     * @throws Exception
      */
-    public function getBasicOCSPResponses()
+    private function getDataByTag(int $tagNumber)
     {
-        /** @var ExplicitlyTaggedObject $tagged */
-        $tagged = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+        /** @var ExplicitlyTaggedObject[] $tagged */
+        $tagged = $this->object->findChildrenByType(Set::class)[0]->getChildren()[0]->findChildrenByType(ExplicitlyTaggedObject::class);
 
-        foreach ($tagged as $object) {
-            if ($object->getIdentifier()->getTagNumber() == 1) {
-
-                /** @var BasicOCSPResponse[] $BasicOCSPResponses */
-                $BasicOCSPResponses = [];
-
-                /** @var Sequence $children */
-                $children = $object->getChildren();
-
-                foreach ($children as $child) {
-                    $BasicOCSPResponses[] = BasicOCSPResponse::createFromContent($child->getBinaryContent());
+        if (count($tagged) > 0) {
+            foreach ($tagged as $item) {
+                if ($item->getIdentifier()->getTagNumber() == $tagNumber) {
+                    $sequence = $item->getChildren()[0];
+                    if (count($sequence->getChildren()) > 0) {
+                        return $sequence->getChildren()[0];
+                    } else {
+                        return null;
+                    }
                 }
-
-                return $BasicOCSPResponses;
             }
         }
+        return null;
+    }
+
+    /**
+     * @return CertificateList|null
+     * @throws Exception
+     */
+    public function getCertificateList()
+    {
+        $certificateList = $this->getDataByTag(0);
+
+        if ($certificateList)
+            return new CertificateList($certificateList);
 
         return null;
     }

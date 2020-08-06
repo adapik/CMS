@@ -278,8 +278,6 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * Unsigned Attributes without parent reference
-     *
      * @return UnsignedAttributes
      * @throws Exception
      */
@@ -355,41 +353,6 @@ class SignerInfo extends CMSBase
         }
 
         return null;
-    }
-
-	/**
-	 * Sometimes having Cryptographic Message Syntax (CMS) we need to store OCSP check response for the
-	 * signer certificate, otherwise CMS data means nothing.
-	 *
-	 * @param BasicOCSPResponse $basicOCSPResponse
-	 *
-	 * @return bool
-	 * @throws Exception
-	 * @todo move to extended package
-	 */
-    public function addRevocationValuesAttribute(BasicOCSPResponse $basicOCSPResponse)
-    {
-        /**
-         * 1. create unsigned attributes
-         */
-        $this->createUnsignedAttributesIfNotExist();
-
-        $revocationValue = Sequence::create([
-            ObjectIdentifier::create(RevocationValues::getOid()),
-            Set::create([
-                Sequence::create([
-                    ExplicitlyTaggedObject::create(1, Sequence::create([$basicOCSPResponse->getBinary()]))
-                ])
-            ])
-        ]);
-
-        /**
-         * 4. Finally insert it into $UnsignedAttribute.
-         */
-
-        $this->getUnsignedAttributesPrivate()->appendChild($revocationValue);
-
-        return true;
     }
 
     /**

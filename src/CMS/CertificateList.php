@@ -11,6 +11,9 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use FG\ASN1\ASN1ObjectInterface;
+use FG\ASN1\Exception\ParserException;
+use FG\ASN1\Universal\BitString;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -34,5 +37,32 @@ class CertificateList extends CMSBase
     public static function createFromContent(string $content)
     {
         return new self(self::makeFromContent($content, Maps\CertificateList::class, Sequence::class));
+    }
+
+    /**
+     * @return AlgorithmIdentifier
+     */
+    public function getSignatureAlgorithm()
+    {
+        return new AlgorithmIdentifier($this->object->getChildren()[1]);
+    }
+
+    /**
+     * @return ASN1ObjectInterface|BitString
+     * @throws ParserException
+     */
+    public function getSignature()
+    {
+        $binary = $this->object->findChildrenByType(BitString::class)[0]->getBinary();
+
+        return BitString::fromBinary($binary);
+    }
+
+    /**
+     * @return TBSCertList
+     */
+    public function getTBSCertList()
+    {
+        return new TBSCertList($this->object->getChildren()[0]);
     }
 }

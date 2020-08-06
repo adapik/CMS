@@ -10,10 +10,14 @@
 
 namespace Adapik\CMS;
 
+use Adapik\CMS\Exception\FormatException;
 use FG\ASN1\ASN1ObjectInterface;
+use FG\ASN1\Exception\Exception;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;
+use FG\ASN1\Universal\ObjectIdentifier;
 use FG\ASN1\Universal\Sequence;
+use FG\ASN1\Universal\Set;
 
 /**
  * Class UnsignedAttributes
@@ -32,7 +36,7 @@ class UnsignedAttributes extends CMSBase
      * @param string $content
      *
      * @return UnsignedAttributes
-     * @throws Exception\FormatException
+     * @throws FormatException
      */
     public static function createFromContent(string $content)
     {
@@ -59,7 +63,7 @@ class UnsignedAttributes extends CMSBase
         $attribute = $this->findByOid($oid);
 
         if ($attribute) {
-            $binary = $attribute->getParent()->getBinary();
+            $binary = $attribute->getBinary();
             return Sequence::fromBinary($binary);
         }
 
@@ -70,11 +74,15 @@ class UnsignedAttributes extends CMSBase
      * @param $oid
      * @return ASN1ObjectInterface|null
      */
-    private function findByOid($oid)
+    protected function findByOid($oid)
     {
-        $child = $this->object->findByOid($oid);
+        foreach ($this->object->getChildren() as $child) {
+            if ($child->getChildren()[0]->__toString() == $oid) {
+                return $child;
+            }
+        }
 
-        return $child ? $child[0] : null;
+        return null;
     }
 
     /**
@@ -130,14 +138,57 @@ class UnsignedAttributes extends CMSBase
         $attribute = $this->findByOid(call_user_func($class . '::getOid'));
 
         if ($attribute) {
-            return new $class($attribute->getParent());
+            return new $class($attribute);
         }
 
         return null;
     }
 
+	/**
+	 * Sometimes having Cryptographic Message Syntax (CMS) we need to store OCSP check response for the
+	 * signer certificate, otherwise CMS data means nothing.
+	 *
+	 * @param BasicOCSPResponse $basicOCSPResponse
+	 *
+	 * @return UnsignedAttributes
+	 * @throws Exception
+	 * @throws ParserException
+	 * @todo move to extended package
+	 */
+    public function setRevocationValues(BasicOCSPResponse $basicOCSPResponse)
+    {
+        $binary = $basicOCSPResponse->getBinary();
+
+		$revocationValues = Sequence::create([
+			ObjectIdentifier::create(RevocationValues::getOid()),
+			Set::create([
+				Sequence::create([
+					ExplicitlyTaggedObject::create(1,
+						Sequence::create([
+							Sequence::fromBinary($binary),
+						]
+						)
+					),
+				]
+				),
+			]
+			),
+		]
+		);
+
+        $current = $this->findByOid(RevocationValues::getOid());
+
+        if ($current) {
+            $this->object->replaceChild($current, $revocationValues);
+        } else {
+            $this->object->appendChild($revocationValues);
+        }
+
+        return $this;
+    }
+
     /**
-     * @return TimeStampToken|null|CMSInterface
+     * @return TimeStampToken|CMSInterface|null
      */
     public function getTimeStampToken()
     {

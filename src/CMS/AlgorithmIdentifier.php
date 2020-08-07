@@ -21,6 +21,9 @@ use FG\ASN1\Universal\Sequence;
  */
 class AlgorithmIdentifier extends CMSBase
 {
+    /** @var Sequence $object */
+    protected $object;
+
     /**
      * @param string $content
      * @return AlgorithmIdentifier

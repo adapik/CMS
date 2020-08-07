@@ -9,6 +9,8 @@ use FG\ASN1\Identifier;
  */
 class SignedDataContent
 {
+    const CERTIFICATES_TAG_NUMBER = 0;
+    const CLR_TAG_NUMBER = 1;
     /**
      * SignedData ::= SEQUENCE {
      *      version CMSVersion,
@@ -20,17 +22,17 @@ class SignedDataContent
      * }
      */
     const MAP = [
-        'type'     => Identifier::SEQUENCE,
+        'type' => Identifier::SEQUENCE,
         'children' => [
             // technically, default implies optional, but we'll define it as being optional, none-the-less, just to
             // reenforce that fact
-            'version'             => [
-                'type'    => Identifier::INTEGER,
+            'version' => [
+                'type' => Identifier::INTEGER,
                 'mapping' => ['v1', 'v2', 'v3', 'v4', 'v5'],
-                'default'  => 'v1'
+                'default' => 'v1'
             ],
             'digestAlgorithms' => [
-                'type'    => Identifier::SET,
+                'type' => Identifier::SET,
                 'min' => 0,
                 'max' => -1,
                 'children' => AlgorithmIdentifier::MAP
@@ -39,23 +41,23 @@ class SignedDataContent
             'certificates' => [
                 'implicit' => true,
                 'optional' => true,
-                'constant' => 0,
+                'constant' => self::CERTIFICATES_TAG_NUMBER,
                 'type' => Identifier::SET,
                 'min' => 0,
                 'max' => -1,
                 'children' => Certificate::MAP
             ],
             'crl' => [
+                'type' => Identifier::SEQUENCE,
                 'explicit' => true,
                 'optional' => true,
-                'constant' => 0,
-                'type' => Identifier::SEQUENCE,
+                'constant' => self::CLR_TAG_NUMBER,
                 'min' => 0,
                 'max' => -1,
-                'children' => CertificateList::MAP
+                'children' => RevocationInfoChoices::MAP,
             ],
             'signerInfos' => [
-                'type'    => Identifier::SET,
+                'type' => Identifier::SET,
                 'min' => 0,
                 'max' => -1,
                 'children' => SignerInfo::MAP

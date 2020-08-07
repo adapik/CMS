@@ -4,6 +4,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
+use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\NullObject;
 use FG\ASN1\Universal\OctetString;
@@ -111,5 +112,38 @@ class SignedData extends CMSBase
             $data = $octetString->getBinaryContent();
         }
         return $data;
+    }
+
+    /**
+     * @param SignedData $signedData
+     * @return $this
+     * @throws ParserException
+     * @todo move to extended package
+     */
+    public function mergeCMS(SignedData $signedData) {
+        $initialContent = $this->getSignedDataContent();
+        $newContent = $signedData->getSignedDataContent();
+        /*
+         * Append
+         * 1. digestAlgorithms
+         * 2. certificates
+         * 3. crl
+         * 4. signerInfos
+         */
+
+        foreach ($newContent->getDigestAlgorithmIdentifiers() as $digestAlgorithmIdentifier) {
+            $initialContent->appendDigestAlgorithmIdentifier($digestAlgorithmIdentifier);
+        }
+
+        foreach ($newContent->getCertificateSet() as $certificate) {
+            $initialContent->appendCertificate($certificate);
+        }
+
+        foreach ($newContent->getSignerInfoSet() as $signerInfo) {
+            $initialContent->appendSignerInfo($signerInfo);
+        }
+
+        return $this;
+
     }
 }

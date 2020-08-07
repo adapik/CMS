@@ -86,6 +86,16 @@ class SignedDataContent extends CMSBase
     }
 
     /**
+     * @param RevocationInfoChoices $revocationInfoChoice
+     * @return SignedDataContent
+     * @todo move to extended package
+     * @todo implement
+     */
+    public function appendRevocationInfoChoices(RevocationInfoChoices $revocationInfoChoice) {
+        return $this;
+    }
+
+        /**
      * @param int $tagNumber
      * @return mixed|null
      * @throws Exception

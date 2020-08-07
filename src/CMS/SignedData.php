@@ -120,10 +120,13 @@ class SignedData extends CMSBase
      * @throws ParserException
      * @todo move to extended package
      */
-    public function mergeCMS(SignedData $signedData) {
+    public function mergeCMS(SignedData $signedData)
+    {
         $initialContent = $this->getSignedDataContent();
         $newContent = $signedData->getSignedDataContent();
-        /*
+
+        /**
+         * @see Maps\SignedDataContent
          * Append
          * 1. digestAlgorithms
          * 2. certificates
@@ -138,6 +141,13 @@ class SignedData extends CMSBase
         foreach ($newContent->getCertificateSet() as $certificate) {
             $initialContent->appendCertificate($certificate);
         }
+
+		$revocationInfoChoices = $newContent->getRevocationInfoChoices();
+        if ($revocationInfoChoices) {
+			foreach($revocationInfoChoices as $revocationInfoChoice) {
+				$initialContent->appendRevocationInfoChoices($revocationInfoChoice);
+			}
+		}
 
         foreach ($newContent->getSignerInfoSet() as $signerInfo) {
             $initialContent->appendSignerInfo($signerInfo);

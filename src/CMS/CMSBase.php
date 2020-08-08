@@ -82,4 +82,18 @@ abstract class CMSBase implements CMSInterface
     {
         return $this->object->getBinaryContent();
     }
+
+	/**
+	 * @return string
+	 */
+    final public function getBase64() {
+    	return base64_encode($this->getBinary());
+	}
+
+	/**
+	 * @return string
+	 */
+	final public function getBase64Content() {
+		return base64_encode($this->getBinaryContent());
+	}
 }

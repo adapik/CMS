@@ -57,80 +57,6 @@ class SignedDataContent extends CMSBase
     }
 
     /**
-     * @param AlgorithmIdentifier $algorithmIdentifier
-     * @return $this
-     * @throws ParserException
-     * @todo move to extended package
-     */
-    public function appendDigestAlgorithmIdentifier(AlgorithmIdentifier $algorithmIdentifier)
-    {
-        $binary = $algorithmIdentifier->getBinary();
-        $this->object->getChildren()[1]->appendChild(Sequence::fromBinary($binary));
-
-        return $this;
-    }
-
-    /**
-     * @param Certificate $certificate
-     * @return $this
-     * @throws ParserException
-     * @todo move to extended package
-     */
-    public function appendCertificate(Certificate $certificate)
-    {
-        $binary = $certificate->getBinary();
-        // FIXME: if getCertificates returns null, cause it is optional field, probably need create
-        $this->getTaggedObjectByTagNumber(Maps\SignedDataContent::CERTIFICATES_TAG_NUMBER)->appendChild(Sequence::fromBinary($binary));
-
-        return $this;
-    }
-
-    /**
-     * @param RevocationInfoChoices $revocationInfoChoice
-     * @return SignedDataContent
-     * @todo move to extended package
-     * @todo implement
-     */
-    public function appendRevocationInfoChoices(RevocationInfoChoices $revocationInfoChoice) {
-        return $this;
-    }
-
-        /**
-     * @param int $tagNumber
-     * @return mixed|null
-     * @throws Exception
-     */
-    protected function getTaggedObjectByTagNumber(int $tagNumber)
-    {
-        $fields = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
-
-        $tag = array_filter($fields, function (ASN1Object $field) use ($tagNumber) {
-            return $field->getIdentifier()->getTagNumber() === $tagNumber;
-        });
-
-        if ($tag) {
-            return array_pop($tag);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param SignerInfo $signerInfo
-     * @return $this
-     * @throws ParserException
-     * @todo move to extended package
-     */
-    public function appendSignerInfo(SignerInfo $signerInfo)
-    {
-        $signerInfoSet = $this->object->findChildrenByType(Set::class)[1];
-        $binary = $signerInfo->getBinary();
-        $signerInfoSet->appendChild(Sequence::fromBinary($binary));
-
-        return $this;
-    }
-
-    /**
      * @return EncapsulatedContentInfo
      * @throws Exception
      * @see Maps\EncapsulatedContentInfo
@@ -153,6 +79,26 @@ class SignedDataContent extends CMSBase
 
         if ($revs) {
             return new RevocationInfoChoices($revs);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param int $tagNumber
+     * @return mixed|null
+     * @throws Exception
+     */
+    protected function getTaggedObjectByTagNumber(int $tagNumber)
+    {
+        $fields = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+
+        $tag = array_filter($fields, function (ASN1Object $field) use ($tagNumber) {
+            return $field->getIdentifier()->getTagNumber() === $tagNumber;
+        });
+
+        if ($tag) {
+            return array_pop($tag);
         }
 
         return null;

@@ -284,19 +284,16 @@ class SignerInfo extends CMSBase
      */
     public function getUnsignedAttributes()
     {
-        $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
-        $attributes = array_filter($exTaggedObjects, function ($value) {
-            return $value->getIdentifier()->getTagNumber() === 1;
-        });
+        $attributes = $this->findUnsignedAttributes();
 
-        return new UnsignedAttributes(array_pop($attributes));
+        return new UnsignedAttributes($attributes);
     }
 
     /**
      * @return ExplicitlyTaggedObject
      * @throws Exception
      */
-    protected function getUnsignedAttributesPrivate()
+    protected function findUnsignedAttributes()
     {
         $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         $attributes = array_filter($exTaggedObjects, function ($value) {
@@ -304,19 +301,6 @@ class SignerInfo extends CMSBase
         });
 
         return array_pop($attributes);
-    }
-
-    /**
-     * Esc-Timestamp Attribute
-     * @return ASN1ObjectInterface|Sequence|null
-     * @throws Exception
-     * @see UnsignedAttributes::getEscTimeStamp()
-     * @example $signerInfo->getUnsignedAttributes()->getEscTimeStamp()
-     * @deprecated
-     */
-    protected function getEscTimeStampToken()
-    {
-        return $this->getUnsignedAttributes()->getEscTimeStamp();
     }
 
     /**
@@ -357,34 +341,6 @@ class SignerInfo extends CMSBase
     }
 
     /**
-     * @return void
-     * @throws Exception
-     * @todo move to extended package
-     */
-    protected function createUnsignedAttributesIfNotExist(): void
-    {
-        /**
-         * 1. First check do we have unsignedAttrs or not, cause it is optional fields and create it if not.
-         * Always push it to the end of child.
-         */
-        $UnsignedAttribute = $this->getUnsignedAttributes();
-
-        if (is_null($UnsignedAttribute)) {
-            $UnsignedAttribute = $this->createUnsignedAttribute();
-            $this->object->appendChild($UnsignedAttribute);
-        }
-    }
-
-    /**
-     * @return ASN1\ImplicitlyTaggedObject
-     * @todo move to extended package
-     */
-    protected function createUnsignedAttribute()
-    {
-        return ExplicitlyTaggedObject::create(1, ASN1\Universal\NullObject::create());
-    }
-
-    /**
      * @return IssuerAndSerialNumber|null
      */
     public function getIssuerAndSerialNumber()
@@ -415,5 +371,32 @@ class SignerInfo extends CMSBase
         }
 
         return null;
+    }
+
+    /**
+     * @return ExplicitlyTaggedObject
+     * @throws Exception
+     */
+    protected function getUnsignedAttributesPrivate()
+    {
+        $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+        $attributes = array_filter($exTaggedObjects, function ($value) {
+            return $value->getIdentifier()->getTagNumber() === 1;
+        });
+
+        return array_pop($attributes);
+    }
+
+    /**
+     * Esc-Timestamp Attribute
+     * @return ASN1ObjectInterface|Sequence|null
+     * @throws Exception
+     * @see UnsignedAttributes::getEscTimeStamp()
+     * @example $signerInfo->getUnsignedAttributes()->getEscTimeStamp()
+     * @deprecated
+     */
+    protected function getEscTimeStampToken()
+    {
+        return $this->getUnsignedAttributes()->getEscTimeStamp();
     }
 }

@@ -26,7 +26,7 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\TimeStampRequest
  * @package Adapik\CMS
  */
-class TimeStampRequest extends RequestModel
+class TimeStampRequest extends CMSBase
 {
     const CONTENT_TYPE = 'application/timestamp-query';
 
@@ -43,44 +43,6 @@ class TimeStampRequest extends RequestModel
     public static function createFromContent(string $content)
     {
         return new self(self::makeFromContent($content, Maps\TimeStampRequest::class, Sequence::class));
-    }
-
-    /**
-     * @param OctetString $data data which should be queried with TS request
-     * @param string $hashAlgorithmOID
-     * @return TimeStampRequest
-     * @throws Exception
-     */
-    public static function createSimple(OctetString $data, string $hashAlgorithmOID = Algorithm::OID_SHA256)
-    {
-        $tspRequest = Sequence::create([
-            # version
-            Integer::create(1),
-            # messageImprint
-            Sequence::create([
-                Sequence::create([
-                    ObjectIdentifier::create($hashAlgorithmOID),
-                    NullObject::create(),
-                ]),
-                OctetString::createFromString(Algorithm::hashValue($hashAlgorithmOID, $data->getBinaryContent()))
-            ]),
-            # nonce
-            Integer::create(rand() << 32 | rand()),
-            # certReq
-            Boolean::create(true),
-        ]);
-
-        return new self($tspRequest);
-    }
-
-    /**
-     * @param string[] $urls
-     * @return TimeStampResponse|null
-     * @throws FormatException
-     */
-    public function processRequest(array $urls)
-    {
-
     }
 
     /**

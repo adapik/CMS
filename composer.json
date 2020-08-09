@@ -15,7 +15,7 @@
   "keywords": [ "cms", "pkcs7", "cades", "x690", "asn1", "asn.1", "ber", "der", "binary", "encoding", "decoding" ],
 
   "require": {
-    "php": ">=7.0",
+    "php": ">=7.2",
     "adapik/phpasn1": "^2.2"
   },
   "require-dev": {

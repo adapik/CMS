@@ -284,9 +284,7 @@ class SignerInfo extends CMSBase
      */
     public function getUnsignedAttributes()
     {
-        $attributes = $this->findUnsignedAttributes();
-
-        return new UnsignedAttributes($attributes);
+        return new UnsignedAttributes($this->findUnsignedAttributes());
     }
 
     /**

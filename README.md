@@ -1,5 +1,5 @@
 # CMS
-A PHP Library that allows you to decode and modify ASN.1 CMS using Basic Encoding Rules (BER)
+A PHP Library that allows you to decode ASN.1 CMS using Basic Encoding Rules (BER)
 
 [![Build Status](https://secure.travis-ci.org/Adapik/CMS.png?branch=master)](http://travis-ci.org/Adapik/CMS)
 [![PHP 7 ready](http://php7ready.timesplinter.ch/Adapik/CMS/badge.svg)](https://travis-ci.org/Adapik/CMS)

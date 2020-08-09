@@ -13,6 +13,7 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use Exception;
 use FG\ASN1\ASN1Object;
+use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\Sequence;
@@ -134,15 +135,29 @@ class SignedDataContent extends CMSBase
      */
     public function getSignerInfoSet()
     {
+        /** @var SignerInfo[] $children */
+        $children = $this->findSignerInfoChildren();
+
+        array_walk($children, function (&$child) {
+            $child = new SignerInfo($child);
+        });
+
+        return $children;
+    }
+
+    /**
+     * @return ASN1ObjectInterface[]
+     * @throws Exception
+     */
+    protected function findSignerInfoChildren()
+    {
         /** @var Set $signerInfoSet */
         $signerInfoSet = $this->object->findChildrenByType(Set::class)[1];
 
         $signerInfoObjects = [];
         foreach ($signerInfoSet->getChildren() as $child) {
-            /** @var Sequence $child */
-            $SignerInfo = new SignerInfo($child);
-
-            $signerInfoObjects[] = $SignerInfo;
+            //$signerInfoObjects[] = new SignerInfo($child);
+            $signerInfoObjects[] = $child;
         }
         return $signerInfoObjects;
     }

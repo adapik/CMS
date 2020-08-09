@@ -11,8 +11,11 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Falseclock\AdvancedCMS\TimeStampResponse;
 use FG\ASN1\Exception\ParserException;
+use FG\ASN1\Universal\ObjectIdentifier;
 use FG\ASN1\Universal\Sequence;
+use FG\ASN1\Universal\Set;
 
 /**
  * Class TimeStampToken

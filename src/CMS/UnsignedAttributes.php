@@ -41,6 +41,19 @@ class UnsignedAttributes extends CMSBase
     }
 
     /**
+     * @return UnsignedAttribute[]
+     */
+    public function getAttributes()
+    {
+        $attributes = [];
+        foreach ($this->object->getChildren() as $child) {
+            $attributes[] = new UnsignedAttribute($child);
+        }
+
+        return $attributes;
+    }
+
+    /**
      * @param string $oid
      * @return ASN1ObjectInterface|Sequence|null
      * @throws ParserException
@@ -130,7 +143,7 @@ class UnsignedAttributes extends CMSBase
      * @param string $class
      * @return CMSInterface|null
      */
-    private function getAttributeAsInstance(string $class)
+    protected function getAttributeAsInstance(string $class)
     {
         $attribute = $this->findByOid(call_user_func($class . '::getOid'));
 

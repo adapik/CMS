@@ -26,8 +26,13 @@ class GeneralName extends CMSBase
      */
     protected $object;
 
+    /**
+     * @param string $content
+     * @return GeneralName
+     * @throws Exception\FormatException
+     */
     public static function createFromContent(string $content)
     {
-        return new self(self::makeFromContent($content, Maps\GeneralName::class, Sequence::class));
+        return new self(self::makeFromContent($content, Maps\GeneralName::class, ExplicitlyTaggedObject::class));
     }
 }

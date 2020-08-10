@@ -11,9 +11,8 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
-use FG\ASN1\ASN1Object;
+use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;
-use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\BitString;
 use FG\ASN1\Universal\Sequence;
 
@@ -51,18 +50,18 @@ class Signature extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
      * @return BitString
+     * @throws ParserException
      */
     public function getSignature()
     {
-        return $this->object->getChildren()[1];
+        $binary = $this->object->getChildren()[1]->getBinary();
+
+        return BitString::fromBinary($binary);
     }
 
     /**
-     * FIXME: shouldn't be created from content
      * @return Certificate[]
-     * @throws FormatException
      */
     public function getCerts()
     {
@@ -73,7 +72,7 @@ class Signature extends CMSBase
             $certs = $this->object->getChildren()[2];
 
             foreach ($certs->getChildren() as $cert) {
-                $certificates[] = Certificate::createFromContent($cert->getBinaryContent());
+                $certificates[] = new Certificate($cert->getChildren()[0]);
             }
         }
         return $certificates;

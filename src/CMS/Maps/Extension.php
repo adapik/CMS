@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Extension
  *
@@ -33,15 +32,15 @@ use FG\ASN1\Identifier;
 abstract class Extension
 {
     const MAP = [
-        'type'     => Identifier::SEQUENCE,
+        'type' => Identifier::SEQUENCE,
         'children' => [
-            'extnId'   => ['type' => Identifier::OBJECT_IDENTIFIER],
-            'critical' => [
-                              'type'     => Identifier::BOOLEAN,
-                              'optional' => true,
-                              'default'  => false
-                          ],
-            'extnValue' => ['type' => Identifier::OCTETSTRING]
+            'extensionId' => ['type' => Identifier::OBJECT_IDENTIFIER],
+            'isCritical' => [
+                'type' => Identifier::BOOLEAN,
+                'optional' => true,
+                'default' => false
+            ],
+            'extensionValue' => ['type' => Identifier::OCTETSTRING]
         ]
     ];
 }

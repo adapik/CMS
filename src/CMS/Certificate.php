@@ -3,6 +3,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CertificateInterface;
 use Exception;
 use FG\ASN1;
 use FG\ASN1\ExplicitlyTaggedObject;
@@ -18,7 +19,7 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\Certificate
  * @package Adapik\CMS
  */
-class Certificate extends CMSBase
+class Certificate extends CMSBase implements CertificateInterface
 {
     const OID_EXTENSION_SUBJECT_KEY_ID = '2.5.29.14';
     const OID_EXTENSION_BASIC_CONSTRAINTS = '2.5.29.19';
@@ -59,7 +60,7 @@ class Certificate extends CMSBase
      * @return Sequence
      * @throws Exception
      */
-    private function getTBSCertificate()
+    protected function getTBSCertificate()
     {
         return $this->object->findChildrenByType(Sequence::class)[0];
     }
@@ -293,4 +294,13 @@ class Certificate extends CMSBase
 
         return BitString::fromBinary($binary);
     }
+
+    /**
+     * @return PublicKey
+     * @throws Exception
+     */
+    public function getPublicKey()
+    {
+        return new PublicKey($this->getTBSCertificate()->getChildren()[6]);
+	}
 }

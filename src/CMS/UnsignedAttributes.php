@@ -11,6 +11,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CMSInterface;
 use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;

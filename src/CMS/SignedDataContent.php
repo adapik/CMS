@@ -11,6 +11,8 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CertificateInterface;
+use Adapik\CMS\Interfaces\SignerInfoInterface;
 use Exception;
 use FG\ASN1\ASN1Object;
 use FG\ASN1\ASN1ObjectInterface;
@@ -34,12 +36,80 @@ class SignedDataContent extends CMSBase
 
     /**
      * @param string $content
+     *
      * @return SignedDataContent
      * @throws FormatException
      */
     public static function createFromContent(string $content)
     {
         return new self(self::makeFromContent($content, Maps\SignedDataContent::class, Sequence::class));
+    }
+
+    /**
+     * @param SignerInfoInterface|SignerInfo $signerInfo
+     *
+     * @return Certificate|null
+     * @throws ParserException
+     */
+    public function getCertificateBySignerInfo(SignerInfoInterface $signerInfo)
+    {
+        $issuerAndSerialNumber = $signerInfo->getIssuerAndSerialNumber();
+        $subjectKeyIdentifier = $signerInfo->getSubjectKeyIdentifier();
+
+        foreach ($this->getCertificateSet() as $certificate) {
+
+            if ($subjectKeyIdentifier && $certificate->getSubjectKeyIdentifier() == bin2hex($subjectKeyIdentifier->getBinaryContent())) {
+                return $certificate;
+            }
+            if ($issuerAndSerialNumber && $certificate->getSerial() == $issuerAndSerialNumber->getSerialNumber()) {
+                return $certificate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return Certificate[]
+     * @throws Exception
+     */
+    public function getCertificateSet()
+    {
+        $certificates = $this->getTaggedObjectByTagNumber(Maps\SignedDataContent::CERTIFICATES_TAG_NUMBER);
+
+        if ($certificates) {
+            $x509Certs = [];
+            foreach ($certificates->getChildren() as $certificate) {
+                $x509Certs[] = new Certificate($certificate);
+            }
+
+            return $x509Certs;
+        }
+
+        return [];
+    }
+
+    /**
+     * @param int $tagNumber
+     *
+     * @return mixed|null
+     * @throws Exception
+     */
+    protected function getTaggedObjectByTagNumber(int $tagNumber)
+    {
+        $fields = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
+
+        $tag = array_filter($fields,
+            function (ASN1Object $field) use ($tagNumber) {
+                return $field->getIdentifier()->getTagNumber() === $tagNumber;
+            }
+        );
+
+        if ($tag) {
+            return array_pop($tag);
+        }
+
+        return null;
     }
 
     /**
@@ -86,31 +156,12 @@ class SignedDataContent extends CMSBase
     }
 
     /**
-     * @param int $tagNumber
-     * @return mixed|null
-     * @throws Exception
-     */
-    protected function getTaggedObjectByTagNumber(int $tagNumber)
-    {
-        $fields = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
-
-        $tag = array_filter($fields, function (ASN1Object $field) use ($tagNumber) {
-            return $field->getIdentifier()->getTagNumber() === $tagNumber;
-        });
-
-        if ($tag) {
-            return array_pop($tag);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param Certificate $certificate
+     * @param CertificateInterface|Certificate $certificate
+     *
      * @return SignerInfo|null
      * @throws ParserException
      */
-    public function getSignerInfoByCertificate(Certificate $certificate)
+    public function getSignerInfoByCertificate(CertificateInterface $certificate)
     {
         foreach ($this->getSignerInfoSet() as $signerInfo) {
 
@@ -138,9 +189,11 @@ class SignedDataContent extends CMSBase
         /** @var SignerInfo[] $children */
         $children = $this->findSignerInfoChildren();
 
-        array_walk($children, function (&$child) {
-            $child = new SignerInfo($child);
-        });
+        array_walk($children,
+            function (&$child) {
+                $child = new SignerInfo($child);
+            }
+        );
 
         return $children;
     }
@@ -159,49 +212,8 @@ class SignedDataContent extends CMSBase
             //$signerInfoObjects[] = new SignerInfo($child);
             $signerInfoObjects[] = $child;
         }
+
         return $signerInfoObjects;
-    }
-
-    /**
-     * @param SignerInfo $signerInfo
-     * @return Certificate|null
-     * @throws ParserException
-     */
-    public function getCertificateBySignerInfo(SignerInfo $signerInfo)
-    {
-        $issuerAndSerialNumber = $signerInfo->getIssuerAndSerialNumber();
-        $subjectKeyIdentifier = $signerInfo->getSubjectKeyIdentifier();
-
-        foreach ($this->getCertificateSet() as $certificate) {
-
-            if ($subjectKeyIdentifier && $certificate->getSubjectKeyIdentifier() == bin2hex($subjectKeyIdentifier->getBinaryContent())) {
-                return $certificate;
-            }
-            if ($issuerAndSerialNumber && $certificate->getSerial() == $issuerAndSerialNumber->getSerialNumber()) {
-                return $certificate;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @return Certificate[]
-     * @throws Exception
-     */
-    public function getCertificateSet()
-    {
-        $certificates = $this->getTaggedObjectByTagNumber(Maps\SignedDataContent::CERTIFICATES_TAG_NUMBER);
-
-        if ($certificates) {
-            $x509Certs = [];
-            foreach ($certificates->getChildren() as $certificate) {
-                $x509Certs[] = new Certificate($certificate);
-            }
-
-            return $x509Certs;
-        }
-        return [];
     }
 
     /**
@@ -212,9 +224,11 @@ class SignedDataContent extends CMSBase
     {
         $fields = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
 
-        $certificates = array_filter($fields, function (ASN1Object $field) {
-            return $field->getIdentifier()->getTagNumber() === 0;
-        });
+        $certificates = array_filter($fields,
+            function (ASN1Object $field) {
+                return $field->getIdentifier()->getTagNumber() === 0;
+            }
+        );
 
         if ($certificates) {
             return array_pop($certificates);

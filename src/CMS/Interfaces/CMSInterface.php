@@ -8,7 +8,7 @@
  * @link      https://github.com/Adapik/CMS
  */
 
-namespace Adapik\CMS;
+namespace Adapik\CMS\Interfaces;
 
 /**
  * Class CMSInterface

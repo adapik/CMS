@@ -3,6 +3,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\SignerInfoInterface;
 use Exception;
 use FG\ASN1;
 use FG\ASN1\AbstractTaggedObject;
@@ -21,7 +22,7 @@ use FG\ASN1\Universal\UTCTime;
  * @see     Maps\SignerInfo
  * @package Adapik\CMS
  */
-class SignerInfo extends CMSBase
+class SignerInfo extends CMSBase implements SignerInfoInterface
 {
     const OID_CONTENT_TYPE = '1.2.840.113549.1.9.3';
     const OID_MESSAGE_DIGEST = '1.2.840.113549.1.9.4';

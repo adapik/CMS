@@ -41,18 +41,20 @@ class ResponseData extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return ExplicitlyTaggedObject
+     * @return Extension[]
      * @throws Exception
      */
     public function getExtensions()
     {
+        $extensions = [];
         $taggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         if (count($taggedObjects) == 2) {
-            return $taggedObjects[1];
+            foreach ($taggedObjects[1]->getChildren()[0]->getChildren() as $child) {
+                $extensions[] = new Extension($child);
+            }
         }
 
-        return null;
+        return $extensions;
     }
 
     /**

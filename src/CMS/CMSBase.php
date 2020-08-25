@@ -85,16 +85,27 @@ abstract class CMSBase implements CMSInterface
     }
 
 	/**
+	 * @param bool $splitToChunks
+	 *
 	 * @return string
 	 */
-    final public function getBase64() {
-    	return chunk_split(base64_encode($this->getBinary()));
+	final public function getBase64($splitToChunks = true) {
+		if($splitToChunks)
+			return chunk_split(base64_encode($this->getBinary()));
+		else
+			return base64_encode($this->getBinary());
 	}
 
 	/**
+	 * @param bool $splitToChunks
+	 *
 	 * @return string
 	 */
-	final public function getBase64Content() {
-		return chunk_split(base64_encode($this->getBinaryContent()));
+	final public function getBase64Content($splitToChunks = true)
+	{
+		if($splitToChunks)
+			return chunk_split(base64_encode($this->getBinaryContent()));
+		else
+			return base64_encode($this->getBinaryContent());
 	}
 }

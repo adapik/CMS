@@ -280,16 +280,22 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
     }
 
     /**
-     * @return UnsignedAttributes
+     * @return UnsignedAttributes|null
      * @throws Exception
      */
     public function getUnsignedAttributes()
     {
-        return new UnsignedAttributes($this->findUnsignedAttributes());
+        $unsignedAttributes = $this->findUnsignedAttributes();
+
+        if ($unsignedAttributes) {
+            return new UnsignedAttributes($unsignedAttributes);
+        } else {
+            return null;
+        }
     }
 
     /**
-     * @return ExplicitlyTaggedObject
+     * @return ExplicitlyTaggedObject|null
      * @throws Exception
      */
     protected function findUnsignedAttributes()
@@ -299,7 +305,11 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
             return $value->getIdentifier()->getTagNumber() === 1;
         });
 
-        return array_pop($attributes);
+        if (count($attributes) > 0) {
+            return array_pop($attributes);
+        } else {
+            return null;
+        }
     }
 
     /**

@@ -12,6 +12,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Exception;
+use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\GeneralizedTime;
 use FG\ASN1\Universal\OctetString;
@@ -58,16 +59,15 @@ class ResponseData extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return GeneralizedTime
+	 * @return ASN1ObjectInterface|GeneralizedTime
      * @throws Exception
      */
     public function getProducedAt()
     {
         /** @var GeneralizedTime $producedAt */
-        $producedAt = $this->object->findChildrenByType(GeneralizedTime::class)[0];
+		$binary = $this->object->findChildrenByType(GeneralizedTime::class)[0]->getBinary();
 
-        return $producedAt;
+		return GeneralizedTime::fromBinary($binary);
     }
 
     /**

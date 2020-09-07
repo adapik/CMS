@@ -5,99 +5,100 @@ declare(strict_types=1);
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
-use Exception;
 use FG\ASN1;
-use FG\ASN1\AbstractTime;
+use FG\ASN1\Mapper\Mapper;
 use FG\ASN1\Universal\Sequence;
 
 /**
  * Certificate Revocation List (CRL)
  */
-class CertificateRevocationList extends CMSBase
+class CertificateRevocationList
 {
     /**
      * @var Sequence
      */
-    protected $object;
+    private $sequence;
 
     /**
-     * @param string $content
-     * @return CertificateRevocationList
-     * @throws FormatException
+     * Certificate constructor.
+     *
+     * @param Sequence $object
      */
-    public static function createFromContent(string $content)
+    public function __construct(Sequence $object)
     {
-        return new self(self::makeFromContent($content, Maps\CertificateRevocationList::class, Sequence::class));
+        $this->sequence = $object;
     }
 
-    /**
-     * @return string
-     */
+    private function getTBSCertList()
+    {
+        return $this->sequence->getChildren()[0];
+    }
+
     public function getSignatureAlgorithm()
     {
-        return (string)$this->object->getChildren()[1]->getChildren()[0];
+        return (string) $this->sequence->getChildren()[1]->getChildren()[0];
     }
 
-    /**
-     * @return string
-     */
     public function getSignatureValue()
     {
-        return (string)$this->object->getChildren()[2];
+        return (string) $this->sequence->getChildren()[2];
     }
 
-    /**
-     * @return Name
-     * @throws Exception
-     */
     public function getIssuer()
     {
-        $name = $this->getTBSCertList()->findChildrenByType(Sequence::class)[1];
+        $name = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[1];
 
         return new Name($name);
     }
 
-    /**
-     * FIXME: shouldn't return ASN1Object
-     * @return ASN1\ASN1Object|mixed
-     */
-    private function getTBSCertList()
-    {
-        return $this->object->getChildren()[0];
-    }
-
-    /**
-     * @return string
-     * @throws Exception
-     */
     public function getThisUpdate()
     {
-        $time = $this->getTBSCertList()->findChildrenByType(AbstractTime::class)[0];
+        $time = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\AbstractTime::class)[0];
 
-        return (string)$time;
+        return (string) $time;
     }
 
-    /**
-     * @return string
-     * @throws Exception
-     */
     public function getNextUpdate()
     {
-        $time = $this->getTBSCertList()->findChildrenByType(AbstractTime::class)[1];
+        $time = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\AbstractTime::class)[1];
 
-        return (string)$time;
+        return (string) $time;
+    }
+
+    public function getSerialNumbers()
+    {
+        $revokedCerts = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[2];
+
+        $numbers = array_map(function(Sequence $revokedCert) {
+            return gmp_strval((string) $revokedCert->getChildren()[0], 16);
+        }, $revokedCerts->getChildren());
+
+        return $numbers;
     }
 
     /**
-     * @return array|string[]
-     * @throws Exception
+     * Constructor
+     *
+     * @param $content
+     *
+     * @return self
+     *
+     * @throws FormatException
      */
-    public function getSerialNumbers()
+    public static function createFromContent($content)
     {
-        $revokedCerts = $this->getTBSCertList()->findChildrenByType(Sequence::class)[2] ?? [];
+        $sequence = ASN1\ASN1Object::fromFile($content);
 
-        return array_map(function (Sequence $revokedCert) {
-            return gmp_strval((string)$revokedCert->getChildren()[0], 16);
-        }, $revokedCerts->getChildren());
+        if (!$sequence instanceof Sequence) {
+            throw new FormatException('CRL must be type of Sequence');
+        }
+
+        $map = (new Mapper())->map($sequence, Maps\CertificateList::MAP);
+
+        if ($map === null) {
+            throw new FormatException('CRL invalid format');
+        }
+
+        return new self($sequence);
     }
 }

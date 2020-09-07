@@ -1,7 +1,7 @@
 <?php
 
 /**
- * PublicKey
+ * PublicKeyInfo
  *
  * PHP version 5
  *
@@ -18,7 +18,7 @@ namespace Adapik\CMS\Maps;
 use FG\ASN1\Identifier;
 
 /**
- * PublicKey
+ * PublicKeyInfo
  *
  * this format is not formally defined anywhere but is none-the-less the form you
  * get when you do "openssl rsa -in private.pem -outform PEM -pubout"
@@ -27,7 +27,7 @@ use FG\ASN1\Identifier;
  * @author  Jim Wigginton <terrafrost@php.net>
  * @access  public
  */
-abstract class PublicKey
+abstract class PublicKeyInfo
 {
     const MAP = [
         'type'     => Identifier::SEQUENCE,

@@ -30,7 +30,7 @@ abstract class AdministrationDomainName
         'type'     => Identifier::CHOICE,
         // if class isn't present it's assumed to be \FG\ASN1::CLASS_UNIVERSAL or
         // (if constant is present) \FG\ASN1::CLASS_CONTEXT_SPECIFIC
-        'class'    => 1, //ASN1::CLASS_APPLICATION,
+        'class'    => ASN1::CLASS_APPLICATION,
         'cast'     => 2,
         'children' => [
             'numeric'   => ['type' => Identifier::NUMERIC_STRING],

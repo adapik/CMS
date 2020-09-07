@@ -29,7 +29,7 @@ abstract class DirectoryString
     const MAP = [
         'type'     => Identifier::CHOICE,
         'children' => [
-            'teletexString'   => ['type' => Identifier::T61_STRING],
+            'teletexString'   => ['type' => Identifier::TELETEX_STRING],
             'printableString' => ['type' => Identifier::PRINTABLE_STRING],
             'universalString' => ['type' => Identifier::UNIVERSAL_STRING],
             'utf8String'      => ['type' => Identifier::UTF8_STRING],

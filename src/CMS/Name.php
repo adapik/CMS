@@ -5,25 +5,23 @@ namespace Adapik\CMS;
 use FG\ASN1\Universal\Sequence;
 
 /**
- * Class Name
- * @see Maps\Name
- * @package Adapik\CMS
+ * RDN
  */
-class Name extends CMSBase
+class Name
 {
     /**
      * @var Sequence
      */
-    protected $object;
+    private $sequence;
 
     /**
-     * @param string $content
-     * @return Name
-     * @throws Exception\FormatException
+     * Name constructor.
+     *
+     * @param Sequence $sequence
      */
-    public static function createFromContent(string $content)
+    public function __construct(Sequence $sequence)
     {
-        return new self(self::makeFromContent($content, Maps\Name::class, Sequence::class));
+        $this->sequence = $sequence;
     }
 
     /**
@@ -33,11 +31,11 @@ class Name extends CMSBase
     {
         $string = [];
 
-        foreach ($this->object->getChildren() as $set) {
+        foreach ($this->sequence->getChildren() as $set) {
             $sequence = $set->getChildren()[0];
-            $oid = (string)$sequence->getChildren()[0];
-            $value = (string)$sequence->getChildren()[1];
-            $string[] = $oid . ': ' . $value;
+            $oid      = (string) $sequence->getChildren()[0];
+            $value    = (string) $sequence->getChildren()[1];
+            $string[] = $oid.': '.$value;
         }
 
         return implode('; ', $string);
@@ -50,10 +48,10 @@ class Name extends CMSBase
     {
         $array = [];
 
-        foreach ($this->object->getChildren() as $set) {
-            $sequence = $set->getChildren()[0];
-            $oid = (string)$sequence->getChildren()[0];
-            $value = (string)$sequence->getChildren()[1];
+        foreach ($this->sequence->getChildren() as $set) {
+            $sequence    = $set->getChildren()[0];
+            $oid         = (string) $sequence->getChildren()[0];
+            $value       = (string) $sequence->getChildren()[1];
             $array[$oid] = $value;
         }
 

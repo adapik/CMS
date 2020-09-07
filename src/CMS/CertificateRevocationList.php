@@ -5,100 +5,99 @@ declare(strict_types=1);
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Exception;
 use FG\ASN1;
-use FG\ASN1\Mapper\Mapper;
+use FG\ASN1\AbstractTime;
 use FG\ASN1\Universal\Sequence;
 
 /**
  * Certificate Revocation List (CRL)
  */
-class CertificateRevocationList
+class CertificateRevocationList extends CMSBase
 {
     /**
      * @var Sequence
      */
-    private $sequence;
+    protected $object;
 
     /**
-     * Certificate constructor.
-     *
-     * @param Sequence $object
+     * @param string $content
+     * @return CertificateRevocationList
+     * @throws FormatException
      */
-    public function __construct(Sequence $object)
+    public static function createFromContent(string $content)
     {
-        $this->sequence = $object;
+        return new self(self::makeFromContent($content, Maps\CertificateRevocationList::class, Sequence::class));
     }
 
-    private function getTBSCertList()
-    {
-        return $this->sequence->getChildren()[0];
-    }
-
+    /**
+     * @return string
+     */
     public function getSignatureAlgorithm()
     {
-        return (string) $this->sequence->getChildren()[1]->getChildren()[0];
+        return (string)$this->object->getChildren()[1]->getChildren()[0];
     }
 
+    /**
+     * @return string
+     */
     public function getSignatureValue()
     {
-        return (string) $this->sequence->getChildren()[2];
+        return (string)$this->object->getChildren()[2];
     }
 
+    /**
+     * @return Name
+     * @throws Exception
+     */
     public function getIssuer()
     {
-        $name = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[1];
+        $name = $this->getTBSCertList()->findChildrenByType(Sequence::class)[1];
 
         return new Name($name);
     }
 
-    public function getThisUpdate()
+    /**
+     * FIXME: shouldn't return ASN1Object
+     * @return ASN1\ASN1Object|mixed
+     */
+    private function getTBSCertList()
     {
-        $time = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\AbstractTime::class)[0];
-
-        return (string) $time;
-    }
-
-    public function getNextUpdate()
-    {
-        $time = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\AbstractTime::class)[1];
-
-        return (string) $time;
-    }
-
-    public function getSerialNumbers()
-    {
-        $revokedCerts = $this->getTBSCertList()->findChildrenByType(\FG\ASN1\Universal\Sequence::class)[2];
-
-        $numbers = array_map(function(Sequence $revokedCert) {
-            return gmp_strval((string) $revokedCert->getChildren()[0], 16);
-        }, $revokedCerts->getChildren());
-
-        return $numbers;
+        return $this->object->getChildren()[0];
     }
 
     /**
-     * Constructor
-     *
-     * @param $content
-     *
-     * @return self
-     *
-     * @throws FormatException
+     * @return string
+     * @throws Exception
      */
-    public static function createFromContent($content)
+    public function getThisUpdate()
     {
-        $sequence = ASN1\ASN1Object::fromFile($content);
+        $time = $this->getTBSCertList()->findChildrenByType(AbstractTime::class)[0];
 
-        if (!$sequence instanceof Sequence) {
-            throw new FormatException('CRL must be type of Sequence');
-        }
+        return (string)$time;
+    }
 
-        $map = (new Mapper())->map($sequence, Maps\CertificateList::MAP);
+    /**
+     * @return string
+     * @throws Exception
+     */
+    public function getNextUpdate()
+    {
+        $time = $this->getTBSCertList()->findChildrenByType(AbstractTime::class)[1];
 
-        if ($map === null) {
-            throw new FormatException('CRL invalid format');
-        }
+        return (string)$time;
+    }
 
-        return new self($sequence);
+    /**
+     * @return array|string[]
+     * @throws Exception
+     */
+    public function getSerialNumbers()
+    {
+        $revokedCerts = $this->getTBSCertList()->findChildrenByType(Sequence::class)[2] ?? [];
+
+        return array_map(function (Sequence $revokedCert) {
+            return gmp_strval((string)$revokedCert->getChildren()[0], 16);
+        }, $revokedCerts->getChildren());
     }
 }

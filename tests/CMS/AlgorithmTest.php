@@ -1,6 +1,6 @@
 <?php
 /**
- * AccuracyTest
+ * AlgorithmTest
  *
  * @author    Nurlan Mukhanov <nurike@gmail.com>
  * @copyright 2020 Nurlan Mukhanov
@@ -41,7 +41,7 @@ class AlgorithmTest extends TestCase
         Algorithm::byOid("1.1.1.1.1");
     }
 
-    public function testhashValue()
+    public function testHashValue()
     {
         self::assertEquals("dd34716876364a02d0195e2fb9ae2d1b", Algorithm::hashValue(Algorithm::OID_MD2, 'test', false));
         self::assertEquals("db346d691d7acc4dc2625db19f9e3f52", Algorithm::hashValue(Algorithm::OID_MD4, 'test', false));

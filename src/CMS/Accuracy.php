@@ -34,7 +34,7 @@ class Accuracy extends CMSBase
      * @return Accuracy
      * @throws Exception\FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\Accuracy::class, Sequence::class));
     }
@@ -54,10 +54,11 @@ class Accuracy extends CMSBase
     //}
 
     /**
-     * @return ASN1ObjectInterface
+     * @return \FG\ASN1\Universal\Integer|ASN1ObjectInterface
      * @throws ParserException
+     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
      */
-    public function getSeconds()
+    public function getSeconds(): \FG\ASN1\Universal\Integer
     {
         $integers = $this->object->findChildrenByType(Integer::class);
 

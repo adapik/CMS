@@ -35,7 +35,7 @@ class CertID extends CMSBase
      * @return CertID
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\CertID::class, Sequence::class));
     }
@@ -43,7 +43,7 @@ class CertID extends CMSBase
     /**
      * @return AlgorithmIdentifier
      */
-    public function getHashAlgorithm()
+    public function getHashAlgorithm(): AlgorithmIdentifier
     {
         return new AlgorithmIdentifier($this->object->getChildren()[0]);
     }
@@ -52,7 +52,7 @@ class CertID extends CMSBase
      * @return OctetString|ASN1ObjectInterface
      * @throws ParserException
      */
-    public function getIssuerKeyHash()
+    public function getIssuerKeyHash(): OctetString
     {
         $binary = $this->object->getChildren()[2]->getBinary();
 
@@ -63,7 +63,7 @@ class CertID extends CMSBase
      * @return OctetString|ASN1ObjectInterface
      * @throws ParserException
      */
-    public function getIssuerNameHash()
+    public function getIssuerNameHash(): OctetString
     {
         $binary = $this->object->getChildren()[1]->getBinary();
 
@@ -73,8 +73,9 @@ class CertID extends CMSBase
     /**
      * @return Integer|ASN1ObjectInterface
      * @throws ParserException
+     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
      */
-    public function getSerialNumber()
+    public function getSerialNumber(): \FG\ASN1\Universal\Integer
     {
         $binary = $this->object->getChildren()[3]->getBinary();
 

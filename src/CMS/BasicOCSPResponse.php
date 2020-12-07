@@ -36,7 +36,7 @@ class BasicOCSPResponse extends CMSBase
      * @return BasicOCSPResponse
      * @throws FormatException
      */
-    public static function createFromOctetString(OctetString $content)
+    public static function createFromOctetString(OctetString $content): self
     {
         return self::createFromContent(base64_encode($content->getBinaryContent()));
     }
@@ -46,7 +46,7 @@ class BasicOCSPResponse extends CMSBase
      * @return BasicOCSPResponse
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\BasicOCSPResponse::class, Sequence::class));
     }
@@ -54,7 +54,7 @@ class BasicOCSPResponse extends CMSBase
     /**
      * @return AlgorithmIdentifier
      */
-    public function getSignatureAlgorithm()
+    public function getSignatureAlgorithm(): AlgorithmIdentifier
     {
         return new AlgorithmIdentifier($this->object->getChildren()[1]);
     }
@@ -63,7 +63,7 @@ class BasicOCSPResponse extends CMSBase
      * @return Certificate[]
      * @throws Exception
      */
-    public function getCerts()
+    public function getCerts(): array
     {
         /** @var ExplicitlyTaggedObject[] $certs */
         $certs = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
@@ -83,7 +83,7 @@ class BasicOCSPResponse extends CMSBase
     /**
      * @return ResponseData
      */
-    public function getTbsResponseData()
+    public function getTbsResponseData(): ResponseData
     {
         $tbsResponseData = $this->object->getChildren()[0];
 
@@ -94,7 +94,7 @@ class BasicOCSPResponse extends CMSBase
      * @return BitString
      * @throws ParserException
      */
-    public function getSignature()
+    public function getSignature(): BitString
     {
         $binary = $this->object->getChildren()[2]->getBinary();
         return BitString::fromBinary($binary);

@@ -8,7 +8,7 @@
          verbose="true"
 >
     <php>
-        <ini name="error_reporting" value="-1" />
+        <ini name="error_reporting" value="-1"/>
     </php>
 
     <testsuites>
@@ -20,6 +20,11 @@
     <filter>
         <whitelist>
             <directory>src</directory>
+            <exclude>
+                <directory>src/CMS/Maps</directory>
+                <directory>src/CMS/Interfaces</directory>
+            </exclude>
         </whitelist>
+
     </filter>
 </phpunit>

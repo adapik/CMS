@@ -29,7 +29,7 @@ class AlgorithmIdentifier extends CMSBase
      * @return AlgorithmIdentifier
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\AlgorithmIdentifier::class, Sequence::class));
     }
@@ -37,7 +37,7 @@ class AlgorithmIdentifier extends CMSBase
     /**
      * @return string HASH Algorithm OID representation
      */
-    public function getAlgorithmOid()
+    public function getAlgorithmOid(): string
     {
         return $this->object->getChildren()[0]->__toString();
     }

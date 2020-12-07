@@ -34,7 +34,7 @@ class Algorithm
      * @return string
      * @throws FormatException
      */
-    public static function byOid(string $oid)
+    public static function byOid(string $oid): string
     {
         switch ($oid) {
             case self::OID_MD2:
@@ -77,7 +77,7 @@ class Algorithm
      * @return string
      * @throws FormatException
      */
-    public static function hashValue(string $algorithmOID, string $value, bool $raw = true)
+    public static function hashValue(string $algorithmOID, string $value, bool $raw = true): string
     {
         switch ($algorithmOID) {
             case self::OID_MD2:

@@ -144,7 +144,7 @@ class UnsignedAttributes extends CMSBase
      * @param string $class
      * @return CMSInterface|null
      */
-    protected function getAttributeAsInstance(string $class)
+    protected function getAttributeAsInstance(string $class): ?CMSInterface
     {
         $attribute = $this->findByOid(call_user_func($class . '::getOid'));
 
@@ -158,7 +158,7 @@ class UnsignedAttributes extends CMSBase
     /**
      * @return TimeStampToken|CMSInterface|null
      */
-    public function getTimeStampToken()
+    public function getTimeStampToken(): ?TimeStampToken
     {
         return $this->getAttributeAsInstance(TimeStampToken::class);
     }

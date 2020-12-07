@@ -34,7 +34,7 @@ class CertStatus extends CMSBase
      * @return CertStatus
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\CertStatus::class, AbstractTaggedObject::class));
     }
@@ -42,7 +42,7 @@ class CertStatus extends CMSBase
     /**
      * @return bool
      */
-    public function isGood()
+    public function isGood(): bool
     {
         return $this->object->getIdentifier()->getTagNumber() == 0;
     }
@@ -50,7 +50,7 @@ class CertStatus extends CMSBase
     /**
      * @return bool
      */
-    public function isRevoked()
+    public function isRevoked(): bool
     {
         return $this->object->getIdentifier()->getTagNumber() == 1;
     }
@@ -58,7 +58,7 @@ class CertStatus extends CMSBase
     /**
      * @return bool
      */
-    public function isUnknown()
+    public function isUnknown(): bool
     {
         return $this->object->getIdentifier()->getTagNumber() == 2;
     }

@@ -26,7 +26,7 @@ class MessageImprint extends CMSBase
      */
     protected $object;
 
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\MessageImprint::class, Sequence::class));
     }
@@ -34,7 +34,7 @@ class MessageImprint extends CMSBase
     /**
      * @return AlgorithmIdentifier
      */
-    public function getHashAlgorithm()
+    public function getHashAlgorithm(): AlgorithmIdentifier
     {
         $digestAlgorithm = $this->object->getChildren()[0];
 
@@ -44,7 +44,7 @@ class MessageImprint extends CMSBase
     /**
      * @return OctetString
      */
-    public function getHashedMessage()
+    public function getHashedMessage(): OctetString
     {
         return OctetString::createFromString($this->object->getChildren()[1]->getBinaryContent());
     }

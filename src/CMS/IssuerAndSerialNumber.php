@@ -33,7 +33,7 @@ class IssuerAndSerialNumber extends CMSBase
      * @return IssuerAndSerialNumber
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\IssuerAndSerialNumber::class, Sequence::class));
     }
@@ -42,7 +42,7 @@ class IssuerAndSerialNumber extends CMSBase
      * @return string
      * @throws Exception
      */
-    public function getSerialNumber()
+    public function getSerialNumber(): string
     {
         return (string)$this->object->findChildrenByType(Integer::class)[0];
     }
@@ -50,7 +50,7 @@ class IssuerAndSerialNumber extends CMSBase
     /**
      * @return Name
      */
-    public function getIssuer()
+    public function getIssuer(): Name
     {
         return new Name($this->object->getChildren()[0]);
     }

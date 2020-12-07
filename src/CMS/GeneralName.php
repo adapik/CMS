@@ -11,7 +11,6 @@
 namespace Adapik\CMS;
 
 use FG\ASN1\ExplicitlyTaggedObject;
-use FG\ASN1\Universal\Sequence;
 
 /**
  * Class GeneralName
@@ -31,7 +30,7 @@ class GeneralName extends CMSBase
      * @return GeneralName
      * @throws Exception\FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\GeneralName::class, ExplicitlyTaggedObject::class));
     }

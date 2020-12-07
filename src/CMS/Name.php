@@ -21,7 +21,7 @@ class Name extends CMSBase
      * @return Name
      * @throws Exception\FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\Name::class, Sequence::class));
     }

@@ -352,7 +352,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
     /**
      * @return IssuerAndSerialNumber|null
      */
-    public function getIssuerAndSerialNumber()
+    public function getIssuerAndSerialNumber(): ?IssuerAndSerialNumber
     {
         $identifier = $this->object->getChildren()[1];
 

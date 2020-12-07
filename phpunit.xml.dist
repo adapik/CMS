@@ -23,6 +23,12 @@
             <exclude>
                 <directory>src/CMS/Maps</directory>
                 <directory>src/CMS/Interfaces</directory>
+                <file>src/CMS/CertificateValues.php</file>
+                <file>src/CMS/CompleteCertificateRefs.php</file>
+                <file>src/CMS/CompleteRevocationRefs.php</file>
+                <file>src/CMS/EscTimeStamp.php</file>
+                <file>src/CMS/Exception/Exception.php</file>
+                <file>src/CMS/Exception/FormatException.php</file>
             </exclude>
         </whitelist>
 

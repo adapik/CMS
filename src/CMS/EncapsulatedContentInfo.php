@@ -34,7 +34,7 @@ class EncapsulatedContentInfo extends CMSBase
      * @return EncapsulatedContentInfo
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\EncapsulatedContentInfo::class, Sequence::class));
     }
@@ -42,7 +42,7 @@ class EncapsulatedContentInfo extends CMSBase
     /**
      * @return string OID
      */
-    public function getContentType()
+    public function getContentType(): string
     {
         /** @var ObjectIdentifier $contentType */
         $contentType = $this->object->getChildren()[0];
@@ -56,14 +56,16 @@ class EncapsulatedContentInfo extends CMSBase
      */
     public function getEContent()
     {
+        $return = null;
+
         $children = $this->object->getChildren();
 
         if (count($children) == 2) {
             $binary = $children[1]->getChildren()[0]->getBinary();
 
-            return OctetString::fromBinary($binary);
+            $return = OctetString::fromBinary($binary);
         }
 
-        return null;
+        return $return;
     }
 }

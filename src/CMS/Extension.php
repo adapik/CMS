@@ -35,16 +35,16 @@ class Extension extends CMSBase
      * @return Extension
      * @throws Exception\FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\Extension::class, Sequence::class));
     }
 
     /**
-     * @return ASN1ObjectInterface
+     * @return ObjectIdentifier|ASN1ObjectInterface
      * @throws ParserException
      */
-    public function getExtensionId()
+    public function getExtensionId(): ObjectIdentifier
     {
         $binary = $this->object->getChildren()[0]->getBinary();
 
@@ -54,16 +54,19 @@ class Extension extends CMSBase
     /**
      * @return Boolean|null
      * @throws ParserException
+     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
      */
-    public function isCritical()
+    public function isCritical(): ?\FG\ASN1\Universal\Boolean
     {
+        $return = null;
+
         $booleans = $this->object->findChildrenByType(Boolean::class);
         if (count($booleans) > 0) {
             $binary = $booleans[0]->getBinary();
-            return Boolean::fromBinary($binary);
+            $return = Boolean::fromBinary($binary);
         }
 
-        return null;
+        return $return;
     }
 
     /**
@@ -73,7 +76,8 @@ class Extension extends CMSBase
     public function getExtensionValue()
     {
         $octets = $this->object->findChildrenByType(OctetString::class);
-        $binary = $octets[0]->getBinary();
+        $binary = $octets[0]->getBinaryContent();
+
         return OctetString::fromBinary($binary);
     }
 }

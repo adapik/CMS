@@ -156,4 +156,10 @@ class CertificateTest extends TestCase
         self::assertInstanceOf(BitString::class, $cert->getSignature());
     }
 
+    public function testGetExtensions() {
+        $cert = Certificate::createFromContent($this->userCert);
+        $extensions = $cert->getExtensions();
+
+        self::assertCount(9,$extensions);
+    }
 }

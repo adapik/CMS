@@ -25,7 +25,7 @@ class CertificateRevocationList extends CMSBase
      * @return CertificateRevocationList
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\CertificateRevocationList::class, Sequence::class));
     }
@@ -33,7 +33,7 @@ class CertificateRevocationList extends CMSBase
     /**
      * @return string
      */
-    public function getSignatureAlgorithm()
+    public function getSignatureAlgorithm(): string
     {
         return (string)$this->object->getChildren()[1]->getChildren()[0];
     }
@@ -41,7 +41,7 @@ class CertificateRevocationList extends CMSBase
     /**
      * @return string
      */
-    public function getSignatureValue()
+    public function getSignatureValue(): string
     {
         return (string)$this->object->getChildren()[2];
     }
@@ -50,7 +50,7 @@ class CertificateRevocationList extends CMSBase
      * @return Name
      * @throws Exception
      */
-    public function getIssuer()
+    public function getIssuer(): Name
     {
         $name = $this->getTBSCertList()->findChildrenByType(Sequence::class)[1];
 
@@ -58,10 +58,9 @@ class CertificateRevocationList extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
      * @return ASN1\ASN1Object|mixed
      */
-    private function getTBSCertList()
+    private function getTBSCertList(): ASN1\ASN1Object
     {
         return $this->object->getChildren()[0];
     }
@@ -70,7 +69,7 @@ class CertificateRevocationList extends CMSBase
      * @return string
      * @throws Exception
      */
-    public function getThisUpdate()
+    public function getThisUpdate(): string
     {
         $time = $this->getTBSCertList()->findChildrenByType(AbstractTime::class)[0];
 
@@ -81,7 +80,7 @@ class CertificateRevocationList extends CMSBase
      * @return string
      * @throws Exception
      */
-    public function getNextUpdate()
+    public function getNextUpdate(): string
     {
         $time = $this->getTBSCertList()->findChildrenByType(AbstractTime::class)[1];
 
@@ -92,7 +91,7 @@ class CertificateRevocationList extends CMSBase
      * @return array|string[]
      * @throws Exception
      */
-    public function getSerialNumbers()
+    public function getSerialNumbers(): array
     {
         $revokedCerts = $this->getTBSCertList()->findChildrenByType(Sequence::class)[2] ?? [];
 

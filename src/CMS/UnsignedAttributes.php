@@ -158,9 +158,8 @@ class UnsignedAttributes extends CMSBase
     /**
      * @return TimeStampToken|CMSInterface|null
      */
-    public function getTimeStampToken(): ?TimeStampToken
+    public function getTimeStampToken()
     {
         return $this->getAttributeAsInstance(TimeStampToken::class);
     }
-
 }

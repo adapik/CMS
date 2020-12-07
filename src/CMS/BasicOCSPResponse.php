@@ -15,7 +15,6 @@ use Exception;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\BitString;
-use FG\ASN1\Universal\OctetString;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -30,16 +29,6 @@ class BasicOCSPResponse extends CMSBase
      * @var Sequence
      */
     protected $object;
-
-    /**
-     * @param OctetString $content
-     * @return BasicOCSPResponse
-     * @throws FormatException
-     */
-    public static function createFromOctetString(OctetString $content): self
-    {
-        return self::createFromContent(base64_encode($content->getBinaryContent()));
-    }
 
     /**
      * @param string $content
@@ -65,19 +54,19 @@ class BasicOCSPResponse extends CMSBase
      */
     public function getCerts(): array
     {
+        $certificates = [];
+
         /** @var ExplicitlyTaggedObject[] $certs */
         $certs = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         if (count($certs)) {
-            $certificates = [];
+
             /** @var Sequence $child */
             foreach ($certs[0]->getChildren() as $child) {
                 $certificates[] = new Certificate($child);
             }
-
-            return $certificates;
         }
 
-        return [];
+        return $certificates;
     }
 
     /**

@@ -6,6 +6,7 @@ use Adapik\CMS\Exception\FormatException;
 use Adapik\CMS\Interfaces\CertificateInterface;
 use Exception;
 use FG\ASN1;
+use FG\ASN1\ASN1Object;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\ImplicitlyTaggedObject;
 use FG\ASN1\Universal\BitString;
@@ -42,7 +43,7 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return Certificate
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\Certificate::class, Sequence::class));
     }
@@ -60,7 +61,7 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return Sequence
      * @throws Exception
      */
-    protected function getTBSCertificate()
+    protected function getTBSCertificate(): Sequence
     {
         return $this->object->findChildrenByType(Sequence::class)[0];
     }
@@ -82,23 +83,24 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return ASN1\ASN1ObjectInterface|null
      * @throws ASN1\Exception\ParserException
      */
-    protected function getExtension(string $oidString)
+    protected function getExtension(string $oidString): ?ASN1Object
     {
+        $return = null;
         $oid = $this->getExtensions()->findByOid($oidString);
 
         if ($oid) {
             $value = $oid[0]->getParent()->findChildrenByType(OctetString::class)[0]->getBinaryContent();
-            return ASN1\ASN1Object::fromBinary($value);
+            $return = ASN1\ASN1Object::fromBinary($value);
         }
 
-        return null;
+        return $return;
     }
 
     /**
-     * @return Sequence
+     * @return ExplicitlyTaggedObject
      * @throws Exception
      */
-    private function getExtensions()
+    private function getExtensions(): ExplicitlyTaggedObject
     {
         $exTaggedObjects = $this->getTBSCertificate()->findChildrenByType(ExplicitlyTaggedObject::class);
         $extensions = array_filter($exTaggedObjects, function (ASN1\ASN1Object $value) {
@@ -112,50 +114,50 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return string|null
      * @throws ASN1\Exception\ParserException
      */
-    public function getAuthorityKeyIdentifier()
+    public function getAuthorityKeyIdentifier(): ?string
     {
+        $return = null;
+
         $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_KEY_ID);
 
-        if (null === $content) {
-            return null;
+        if (!is_null($content)) {
+            $children = $content->findChildrenByType(ImplicitlyTaggedObject::class);
+            $children = array_filter($children, function (ASN1\ASN1Object $value) {
+                return $value->getIdentifier()->getTagNumber() === 0;
+            });
+
+            $return = bin2hex($children[0]->getBinaryContent());
         }
 
-        $children = $content->findChildrenByType(ImplicitlyTaggedObject::class);
-        $children = array_filter($children, function (ASN1\ASN1Object $value) {
-            return $value->getIdentifier()->getTagNumber() === 0;
-        });
-
-        return bin2hex($children[0]->getBinaryContent());
+        return $return;
     }
 
     /**
      * @return string[]
      * @throws ASN1\Exception\ParserException
+     * @noinspection DuplicatedCode
      */
     public function getOcspUris(): array
     {
-        $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_INFO_ACCESS);
-
-        if (null === $content) {
-            return [];
-        }
-
-        $oids = $content->findByOid(self::OID_OCSP_URI);
-
         $uris = [];
 
-        if ($oids) {
-            $uris = [];
-            foreach ($oids as $oid) {
-                $siblings = $oid->getSiblings();
-                $uri = array_filter($siblings, function (ASN1\ASN1Object $value) {
-                    return $value->getIdentifier()->getTagNumber() === 6;
-                });
-                $uri = array_pop($uri);
-                $uris[] = $uri->getBinaryContent();
+        $content = $this->getExtension(self::OID_EXTENSION_AUTHORITY_INFO_ACCESS);
+
+        if (!is_null($content)) {
+            $oids = $content->findByOid(self::OID_OCSP_URI);
+
+            if ($oids) {
+                $uris = [];
+                foreach ($oids as $oid) {
+                    $siblings = $oid->getSiblings();
+                    $uri = array_filter($siblings, function (ASN1\ASN1Object $value) {
+                        return $value->getIdentifier()->getTagNumber() === 6;
+                    });
+                    $uri = array_pop($uri);
+                    $uris[] = $uri->getBinaryContent();
+                }
             }
         }
-
         return $uris;
     }
 
@@ -163,7 +165,7 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return Name
      * @throws Exception
      */
-    public function getIssuer()
+    public function getIssuer(): Name
     {
         return new Name($this->getTBSCertificate()->getChildren()[3]);
     }
@@ -190,7 +192,7 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return Subject
      * @throws Exception
      */
-    public function getSubject()
+    public function getSubject(): Subject
     {
         return new Subject($this->getTBSCertificate()->getChildren()[5]);
     }
@@ -199,32 +201,35 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return string[]
      * @throws ASN1\Exception\ParserException
      */
-    public function getCertPolicies()
+    public function getCertPolicies(): array
     {
+        $return = [];
+
         $policies = $this->getExtension(self::OID_EXTENSION_CERT_POLICIES);
 
-        if ($policies === null) {
-            return [];
+        if (!is_null($policies)) {
+            $return = array_map(function (Sequence $policy) {
+                return (string)$policy->getChildren()[0];
+            }, $policies->getChildren());
         }
 
-        return array_map(function (Sequence $policy) {
-            return (string)$policy->getChildren()[0];
-        }, $policies->getChildren());
+        return $return;
     }
 
     /**
      * @return string[]
      * @throws ASN1\Exception\ParserException
      */
-    public function getExtendedKeyUsage()
+    public function getExtendedKeyUsage(): array
     {
+        $return = [];
+
         $extKeyUsageSyntax = $this->getExtension(self::OID_EXTENSION_EXTENDED_KEY_USAGE);
 
-        if ($extKeyUsageSyntax === null) {
-            return [];
-        }
+        if (!is_null($extKeyUsageSyntax))
+            $return = array_map('strval', $extKeyUsageSyntax->getChildren());
 
-        return array_map('strval', $extKeyUsageSyntax->getChildren());
+        return $return;
     }
 
     /**
@@ -245,41 +250,9 @@ class Certificate extends CMSBase implements CertificateInterface
     }
 
     /**
-     * Basically used in OCSP requests and responses
-     *
-     * @param string $algorithmOID
-     *
-     * @return string
-     * @throws FormatException
-     */
-    public function getNameHash(string $algorithmOID)
-    {
-        // TODO: recheck
-        return Algorithm::hashValue($algorithmOID, $this->getTBSCertificate()->getChildren()[5]->getBinary());
-    }
-
-    /**
-     * Basically used in OCSP requests and responses
-     *
-     * @param string $algorithmOID
-     *
-     * @return string
-     * @throws FormatException
-     */
-    public function getKeyHash(string $algorithmOID)
-    {
-        // TODO: recheck
-        $child = $this->getTBSCertificate()->getChildren()[6];
-        /** @var BitString $octet */
-        $octet = $child->findChildrenByType(ASN1\Universal\BitString::class)[0];
-
-        return Algorithm::hashValue($algorithmOID, hex2bin($octet->getStringValue()));
-    }
-
-    /**
      * @return AlgorithmIdentifier
      */
-    public function getSignatureAlgorithm()
+    public function getSignatureAlgorithm(): AlgorithmIdentifier
     {
         return new AlgorithmIdentifier($this->object->getChildren()[1]);
     }
@@ -288,7 +261,7 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return ASN1\ASN1ObjectInterface|BitString
      * @throws ASN1\Exception\ParserException
      */
-    public function getSignature()
+    public function getSignature(): BitString
     {
         $binary = $this->object->getChildren()[2]->getBinary();
 
@@ -299,8 +272,8 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return PublicKey
      * @throws Exception
      */
-    public function getPublicKey()
+    public function getPublicKey(): PublicKey
     {
         return new PublicKey($this->getTBSCertificate()->getChildren()[6]);
-	}
+    }
 }

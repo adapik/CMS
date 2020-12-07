@@ -41,20 +41,19 @@ abstract class CMSBase implements CMSInterface
      * @param string $objectClass
      * @return ASN1ObjectInterface
      * @throws FormatException
+     * @noinspection DuplicatedCode
      */
-    final protected static function makeFromContent(string $content, string $mapperClass, string $objectClass)
+    final protected static function makeFromContent(string $content, string $mapperClass, string $objectClass): ASN1ObjectInterface
     {
         $object = ASN1Object::fromFile($content);
 
-        if (!$object instanceof $objectClass) {
+        if (!$object instanceof $objectClass)
             throw new FormatException(self::className($mapperClass) . ' must be type of ' . self::className($objectClass));
-        }
 
         $map = (new Mapper())->map($object, $mapperClass::MAP);
 
-        if ($map === null) {
+        if ($map === null)
             throw new FormatException(self::className($mapperClass) . ' invalid format');
-        }
 
         return $object;
     }
@@ -63,7 +62,7 @@ abstract class CMSBase implements CMSInterface
      * @param string $classname
      * @return false|string
      */
-    private static function className(string $classname)
+    private static function className(string $classname): string
     {
         return (substr($classname, strrpos($classname, '\\') + 1));
     }
@@ -71,7 +70,7 @@ abstract class CMSBase implements CMSInterface
     /**
      * @return string
      */
-    final public function getBinary()
+    final public function getBinary(): string
     {
         return $this->object->getBinary();
     }
@@ -79,7 +78,7 @@ abstract class CMSBase implements CMSInterface
     /**
      * @return string
      */
-    final public function getBinaryContent()
+    final public function getBinaryContent(): string
     {
         return $this->object->getBinaryContent();
     }
@@ -89,7 +88,8 @@ abstract class CMSBase implements CMSInterface
 	 *
 	 * @return string
 	 */
-	final public function getBase64($splitToChunks = true) {
+	final public function getBase64($splitToChunks = true): string
+    {
 		if($splitToChunks)
 			return chunk_split(base64_encode($this->getBinary()));
 		else
@@ -101,8 +101,8 @@ abstract class CMSBase implements CMSInterface
 	 *
 	 * @return string
 	 */
-	final public function getBase64Content($splitToChunks = true)
-	{
+	final public function getBase64Content($splitToChunks = true): string
+    {
 		if($splitToChunks)
 			return chunk_split(base64_encode($this->getBinaryContent()));
 		else

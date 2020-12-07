@@ -63,7 +63,7 @@ class Algorithm
             case self::OID_GOST34_11_94:
                 return 'gost';
             default:
-                throw new FormatException('Unknown hash algorithm');
+                throw new FormatException('Unknown hash algorithm with OID: ' . $oid);
         }
     }
 
@@ -80,10 +80,10 @@ class Algorithm
     public static function hashValue(string $algorithmOID, string $value, bool $raw = true): string
     {
         switch ($algorithmOID) {
-            case self::OID_MD2:
-                return hash('md2', $value, $raw);
             case self::OID_MD4:
                 return hash('md4', $value, $raw);
+            case self::OID_MD2:
+                return hash('md2', $value, $raw);
             case self::OID_MD5:
                 return hash('md5', $value, $raw);
             case self::OID_SHA1:

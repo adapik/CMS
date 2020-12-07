@@ -31,7 +31,7 @@ class TBSCertList extends CMSBase
      * @return TBSCertList
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\TBSCertList::class, Sequence::class));
     }

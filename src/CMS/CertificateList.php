@@ -34,7 +34,7 @@ class CertificateList extends CMSBase
      * @return CertificateList
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\CertificateList::class, Sequence::class));
     }
@@ -42,7 +42,7 @@ class CertificateList extends CMSBase
     /**
      * @return AlgorithmIdentifier
      */
-    public function getSignatureAlgorithm()
+    public function getSignatureAlgorithm(): AlgorithmIdentifier
     {
         return new AlgorithmIdentifier($this->object->getChildren()[1]);
     }
@@ -51,7 +51,7 @@ class CertificateList extends CMSBase
      * @return ASN1ObjectInterface|BitString
      * @throws ParserException
      */
-    public function getSignature()
+    public function getSignature(): BitString
     {
         $binary = $this->object->findChildrenByType(BitString::class)[0]->getBinary();
 
@@ -61,7 +61,7 @@ class CertificateList extends CMSBase
     /**
      * @return TBSCertList
      */
-    public function getTBSCertList()
+    public function getTBSCertList(): TBSCertList
     {
         return new TBSCertList($this->object->getChildren()[0]);
     }

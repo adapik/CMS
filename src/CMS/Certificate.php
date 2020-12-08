@@ -42,7 +42,7 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return Certificate
      * @throws FormatException
      */
-    public static function createFromContent(string $content): self
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\Certificate::class, Sequence::class));
     }
@@ -224,7 +224,7 @@ class Certificate extends CMSBase implements CertificateInterface
      */
     public function getValidNotAfter(): string
     {
-        return (string)$this->_getTBSCertificate()->getChildren()[4]->getChildren()[1];
+        return $this->getTBSCertificate()->getValidNotAfter();
     }
 
     /**

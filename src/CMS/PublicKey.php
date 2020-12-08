@@ -33,7 +33,7 @@ class PublicKey extends CMSBase
      * @return PublicKey
      * @throws Exception\FormatException
      */
-    public static function createFromContent(string $content): self
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\PublicKey::class, Sequence::class));
     }

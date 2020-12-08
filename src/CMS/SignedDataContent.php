@@ -40,7 +40,7 @@ class SignedDataContent extends CMSBase
      * @return SignedDataContent
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\SignedDataContent::class, Sequence::class));
     }
@@ -51,30 +51,32 @@ class SignedDataContent extends CMSBase
      * @return Certificate|null
      * @throws ParserException
      */
-    public function getCertificateBySignerInfo(SignerInfoInterface $signerInfo)
+    public function getCertificateBySignerInfo(SignerInfoInterface $signerInfo): ?Certificate
     {
+        $return =null;
         $issuerAndSerialNumber = $signerInfo->getIssuerAndSerialNumber();
         $subjectKeyIdentifier = $signerInfo->getSubjectKeyIdentifier();
 
         foreach ($this->getCertificateSet() as $certificate) {
 
             if ($subjectKeyIdentifier && $certificate->getSubjectKeyIdentifier() == bin2hex($subjectKeyIdentifier->getBinaryContent())) {
-                return $certificate;
+                $return = $certificate;
             }
             if ($issuerAndSerialNumber && $certificate->getSerial() == $issuerAndSerialNumber->getSerialNumber()) {
-                return $certificate;
+                $return = $certificate;
             }
         }
 
-        return null;
+        return $return;
     }
 
     /**
      * @return Certificate[]
      * @throws Exception
      */
-    public function getCertificateSet()
+    public function getCertificateSet(): array
     {
+        $return = [];
         $certificates = $this->getTaggedObjectByTagNumber(Maps\SignedDataContent::CERTIFICATES_TAG_NUMBER);
 
         if ($certificates) {
@@ -83,10 +85,10 @@ class SignedDataContent extends CMSBase
                 $x509Certs[] = new Certificate($certificate);
             }
 
-            return $x509Certs;
+            $return = $x509Certs;
         }
 
-        return [];
+        return $return;
     }
 
     /**
@@ -115,7 +117,7 @@ class SignedDataContent extends CMSBase
     /**
      * @return AlgorithmIdentifier[]
      */
-    public function getDigestAlgorithmIdentifiers()
+    public function getDigestAlgorithmIdentifiers(): array
     {
         $AlgorithmIdentifiers = [];
         $digestAlgorithms = $this->object->getChildren()[1];
@@ -131,6 +133,7 @@ class SignedDataContent extends CMSBase
      * @return EncapsulatedContentInfo
      * @throws Exception
      * @see Maps\EncapsulatedContentInfo
+     * @noinspection PhpMissingReturnTypeInspection
      */
     public function getEncapsulatedContentInfo()
     {
@@ -161,30 +164,31 @@ class SignedDataContent extends CMSBase
      * @return SignerInfo|null
      * @throws ParserException
      */
-    public function getSignerInfoByCertificate(CertificateInterface $certificate)
+    public function getSignerInfoByCertificate(CertificateInterface $certificate): ?SignerInfo
     {
+        $return = null;
         foreach ($this->getSignerInfoSet() as $signerInfo) {
 
             $issuerAndSerialNumber = $signerInfo->getIssuerAndSerialNumber();
             $subjectKeyIdentifier = $signerInfo->getSubjectKeyIdentifier();
 
             if ($subjectKeyIdentifier && $certificate->getSubjectKeyIdentifier() == bin2hex($subjectKeyIdentifier->getBinaryContent())) {
-                return $signerInfo;
+                $return = $signerInfo;
             }
 
             if ($issuerAndSerialNumber && $certificate->getSerial() == $issuerAndSerialNumber->getSerialNumber()) {
-                return $signerInfo;
+                $return = $signerInfo;
             }
         }
 
-        return null;
+        return $return;
     }
 
     /**
      * @return SignerInfo[]
      * @throws Exception
      */
-    public function getSignerInfoSet()
+    public function getSignerInfoSet(): array
     {
         /** @var SignerInfo[] $children */
         $children = $this->findSignerInfoChildren();
@@ -202,7 +206,7 @@ class SignedDataContent extends CMSBase
      * @return ASN1ObjectInterface[]
      * @throws Exception
      */
-    protected function findSignerInfoChildren()
+    protected function findSignerInfoChildren(): array
     {
         /** @var Set $signerInfoSet */
         $signerInfoSet = $this->object->findChildrenByType(Set::class)[1];
@@ -214,26 +218,5 @@ class SignedDataContent extends CMSBase
         }
 
         return $signerInfoObjects;
-    }
-
-    /**
-     * @return ASN1Object
-     * @throws Exception
-     */
-    protected function getCertificates()
-    {
-        $fields = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
-
-        $certificates = array_filter($fields,
-            function (ASN1Object $field) {
-                return $field->getIdentifier()->getTagNumber() === 0;
-            }
-        );
-
-        if ($certificates) {
-            return array_pop($certificates);
-        }
-
-        return null;
     }
 }

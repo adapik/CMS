@@ -25,7 +25,7 @@ class CertificateRevocationList extends CMSBase
      * @return CertificateRevocationList
      * @throws FormatException
      */
-    public static function createFromContent(string $content): self
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\CertificateRevocationList::class, Sequence::class));
     }

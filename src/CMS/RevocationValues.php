@@ -36,7 +36,7 @@ class RevocationValues extends UnsignedAttribute
      * @return RevocationValues
      * @throws Exception
      */
-    public static function createFromContent(string $content): self
+    public static function createFromContent(string $content): CMSBase
     {
         throw new Exception("RevocationValues couldn't be created such way");
     }

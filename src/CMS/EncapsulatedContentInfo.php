@@ -34,7 +34,7 @@ class EncapsulatedContentInfo extends CMSBase
      * @return EncapsulatedContentInfo
      * @throws FormatException
      */
-    public static function createFromContent(string $content): self
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\EncapsulatedContentInfo::class, Sequence::class));
     }

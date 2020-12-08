@@ -10,6 +10,8 @@
 
 namespace Adapik\CMS\Interfaces;
 
+use Adapik\CMS\CMSBase;
+
 /**
  * Class CMSInterface
  * @package Adapik\CMS
@@ -20,5 +22,5 @@ interface CMSInterface
      * @param string $content
      * @return mixed
      */
-    public static function createFromContent(string $content);
+    public static function createFromContent(string $content): CMSBase;
 }

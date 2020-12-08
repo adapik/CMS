@@ -35,7 +35,7 @@ class ResponseData extends CMSBase
      * @return ResponseData
      * @throws FormatException
      */
-    public static function createFromContent(string $content): self
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\ResponseData::class, Sequence::class));
     }

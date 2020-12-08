@@ -13,6 +13,7 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use Exception;
 use FG\ASN1\AbstractTaggedObject;
+use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\GeneralizedTime;
 use FG\ASN1\Universal\Sequence;
@@ -35,7 +36,7 @@ class SingleResponse extends CMSBase
      * @return SingleResponse
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\SingleResponse::class, Sequence::class));
     }
@@ -44,7 +45,7 @@ class SingleResponse extends CMSBase
      * @return CertID
      * @throws Exception
      */
-    public function getCertID()
+    public function getCertID(): CertID
     {
         $certID = $this->object->findChildrenByType(Sequence::class)[0];
 
@@ -55,7 +56,7 @@ class SingleResponse extends CMSBase
      * @return CertStatus
      * @throws Exception
      */
-    public function getCertStatus()
+    public function getCertStatus(): CertStatus
     {
         $certStatus = $this->object->findChildrenByType(AbstractTaggedObject::class)[0];
 
@@ -63,49 +64,50 @@ class SingleResponse extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
      * @return GeneralizedTime
      * @throws Exception
      */
-    public function getThisUpdate()
+    public function getThisUpdate(): GeneralizedTime
     {
         /** @var GeneralizedTime $GeneralizedTime */
-        $GeneralizedTime = $this->object->findChildrenByType(GeneralizedTime::class)[0];
+        $GeneralizedTime = $this->object->findChildrenByType(GeneralizedTime::class)[0]->detach();
 
         return $GeneralizedTime;
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return ExplicitlyTaggedObject|null
+     * @return ExplicitlyTaggedObject|ASN1ObjectInterface|null
      * @throws Exception
      */
-    public function getNextUpdate()
+    public function getNextUpdate(): ?ExplicitlyTaggedObject
     {
+        $return = null;
         /** @var ExplicitlyTaggedObject[] $taggedObjects */
         $taggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         foreach ($taggedObjects as $taggedObject) {
             if ($taggedObject->getIdentifier()->getTagNumber() == 0) {
-                return $taggedObject;
+                $return = $taggedObject->detach();
+                break;
             }
         }
-        return null;
+        return $return;
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return ExplicitlyTaggedObject|null
+     * @return ExplicitlyTaggedObject|ASN1ObjectInterface|null
      * @throws Exception
      */
-    public function getSingleExtensions()
+    public function getSingleExtensions(): ?ExplicitlyTaggedObject
     {
+        $return = null;
         /** @var ExplicitlyTaggedObject[] $taggedObjects */
         $taggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         foreach ($taggedObjects as $taggedObject) {
             if ($taggedObject->getIdentifier()->getTagNumber() == 1) {
-                return $taggedObject;
+                $return = $taggedObject->detach();
             }
         }
-        return null;
+
+        return $return;
     }
 }

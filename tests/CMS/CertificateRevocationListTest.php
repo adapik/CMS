@@ -1,4 +1,10 @@
 <?php
+/**
+ * CertificateRevocationListTest
+ *
+ * @license   https://en.wikipedia.org/wiki/MIT_License MIT License
+ * @link      https://github.com/Adapik/CMS
+ */
 
 declare(strict_types=1);
 

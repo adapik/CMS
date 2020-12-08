@@ -19,14 +19,14 @@ class UnsignedAttribute extends CMSBase
     /**
      * @return string
      */
-    final public static function getOid()
+    final public static function getOid(): string
     {
         return static::$oid;
     }
 
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): CMSBase
     {
-        return new self(self::makeFromContent($content, Maps\UnsignedAttribute::class, Sequence::class));
+        throw new Exception("Unsigned attribute can't be created such way");
     }
 
     /**
@@ -41,12 +41,11 @@ class UnsignedAttribute extends CMSBase
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return Set
+     * @return Set|ASN1ObjectInterface
      * @throws Exception
      */
-    public function getValue()
+    public function getValue(): Set
     {
-        return $this->object->findChildrenByType(Set::class)[0];
+        return $this->object->findChildrenByType(Set::class)[0]->detach();
     }
 }

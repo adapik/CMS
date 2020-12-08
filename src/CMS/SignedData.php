@@ -29,7 +29,7 @@ class SignedData extends CMSBase
      * @return SignedData
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\SignedData::class, Sequence::class));
     }
@@ -50,6 +50,7 @@ class SignedData extends CMSBase
      * Message content
      * @return SignedDataContent
      * @throws Exception
+     * @noinspection PhpMissingReturnTypeInspection
      */
     public function getSignedDataContent()
     {
@@ -74,7 +75,7 @@ class SignedData extends CMSBase
      * If there is a signed content
      * @return bool
      */
-    public function hasData()
+    public function hasData(): bool
     {
         $siblings = $this->object->findByOid(self::OID_DATA)[0]->getSiblings();
         /** @var ExplicitlyTaggedObject|null $dataValue */
@@ -90,7 +91,7 @@ class SignedData extends CMSBase
      * Get signed content as binary string
      * @return null|string
      */
-    public function getData()
+    public function getData(): ?string
     {
         $siblings = $this->object->findByOid(self::OID_DATA)[0]->getSiblings();
         /** @var ExplicitlyTaggedObject|null $dataValue */
@@ -101,14 +102,13 @@ class SignedData extends CMSBase
         }
         /** @var OctetString $octetString */
         $octetString = $dataValue->getChildren()[0];
-        $data = '';
+        $data = $octetString->getBinaryContent();
         if ($octetString->isConstructed()) {
+            $data = '';
             foreach ($octetString->getChildren() as $child) {
                 /** @var OctetString $child */
                 $data .= $child->getBinaryContent();
             }
-        } else {
-            $data = $octetString->getBinaryContent();
         }
         return $data;
     }

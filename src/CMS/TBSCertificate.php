@@ -34,7 +34,7 @@ class TBSCertificate extends CMSBase
      * @return static
      * @throws Exception
      */
-    public static function createFromContent(string $content): self
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\TBSCertificate::class, Sequence::class));
     }

@@ -32,7 +32,7 @@ class TimeStampToken extends UnsignedAttribute
      * @return TimeStampToken
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\TimeStampToken::class, Sequence::class));
     }

@@ -44,7 +44,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return SignerInfo
      * @throws FormatException
      */
-    public static function createFromContent(string $content): self
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\SignerInfo::class, Sequence::class));
     }
@@ -106,13 +106,15 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      */
     public function getSigningCertificateV2()
     {
+        $return = null;
+
         $signingCert = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_CERTIFICATE_V2);
         if ($signingCert) {
             $binary = $signingCert[0]->getParent()->getBinary();
 
-            return Sequence::fromBinary($binary);
+            $return = Sequence::fromBinary($binary);
         }
-        return null;
+        return $return;
     }
 
     /**
@@ -213,7 +215,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      */
     protected function isLongType1(): bool
     {
-        if ($this->isBES() && $this->isT() && $this->getUnsignedAttributes()->getEscTimeStamp() && $this->hasEvidences()) {
+        if ($this->isBES() && $this->isT() && !is_null($this->getUnsignedAttributes()) && $this->getUnsignedAttributes()->getEscTimeStamp() && $this->hasEvidences()) {
             return true;
         }
 
@@ -281,7 +283,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
     protected function isT(): bool
     {
         $return = false;
-        if ($this->isBES() && $this->getUnsignedAttributes()->getTimeStampToken()) {
+        if ($this->isBES() && !is_null($this->getUnsignedAttributes()) && $this->getUnsignedAttributes()->getTimeStampToken()) {
             $return = true;
         }
 
@@ -355,13 +357,14 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      */
     public function getSigningTime(): ?UTCTime
     {
+        $return = null;
         $SignedTimeStamp = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_TIME);
         if ($SignedTimeStamp) {
             $binary = $SignedTimeStamp[0]->getSiblings()[0]->getChildren()[0]->getBinary();
-            return ASN1\Universal\UTCTime::fromBinary($binary);
+            $return = ASN1\Universal\UTCTime::fromBinary($binary);
         }
 
-        return null;
+        return $return;
     }
 
     /**
@@ -399,32 +402,5 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
         }
 
         return $return;
-    }
-
-    /**
-     * @return ExplicitlyTaggedObject
-     * @throws Exception
-     */
-    protected function getUnsignedAttributesPrivate(): ExplicitlyTaggedObject
-    {
-        $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
-        $attributes = array_filter($exTaggedObjects, function ($value) {
-            return $value->getIdentifier()->getTagNumber() === 1;
-        });
-
-        return array_pop($attributes);
-    }
-
-    /**
-     * Esc-Timestamp Attribute
-     * @return ASN1ObjectInterface|Sequence|null
-     * @throws Exception
-     * @see UnsignedAttributes::getEscTimeStamp()
-     * @example $signerInfo->getUnsignedAttributes()->getEscTimeStamp()
-     * @deprecated
-     */
-    protected function getEscTimeStampToken()
-    {
-        return $this->getUnsignedAttributes()->getEscTimeStamp();
     }
 }

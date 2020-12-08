@@ -36,114 +36,130 @@ class Subject extends Name
 	/**
 	 * @return string|null
 	 */
-	public function getAliasedEntryName() {
+	public function getAliasedEntryName(): ?string
+    {
 		return $this->getValueByOid(self::OID_aliasedEntryName);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getCommonName() {
+	public function getCommonName(): ?string
+    {
 		return $this->getValueByOid(self::OID_commonName);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getCountryName() {
+	public function getCountryName(): ?string
+    {
 		return $this->getValueByOid(self::OID_countryName);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getDescription() {
+	public function getDescription(): ?string
+    {
 		return $this->getValueByOid(self::OID_description);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getEmailAddress() {
+	public function getEmailAddress(): ?string
+    {
 		return $this->getValueByOid(self::OID_emailAddress);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getGivenName() {
+	public function getGivenName(): ?string
+    {
 		return $this->getValueByOid(self::OID_givenName);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getKnowledgeInformation() {
+	public function getKnowledgeInformation(): ?string
+    {
 		return $this->getValueByOid(self::OID_knowledgeInformation);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getLocalityName() {
+	public function getLocalityName(): ?string
+    {
 		return $this->getValueByOid(self::OID_localityName);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getOrganizationName() {
+	public function getOrganizationName(): ?string
+    {
 		return $this->getValueByOid(self::OID_organizationName);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getOrganizationalUnitName() {
+	public function getOrganizationalUnitName(): ?string
+    {
 		return $this->getValueByOid(self::OID_organizationalUnitName);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getSerialNumber() {
+	public function getSerialNumber(): ?string
+    {
 		return $this->getValueByOid(self::OID_serialNumber);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getStateOrProvinceName() {
+	public function getStateOrProvinceName(): ?string
+    {
 		return $this->getValueByOid(self::OID_stateOrProvinceName);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getStreetAddress() {
+	public function getStreetAddress(): ?string
+    {
 		return $this->getValueByOid(self::OID_streetAddress);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getSurname() {
+	public function getSurname(): ?string
+    {
 		return $this->getValueByOid(self::OID_surname);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public function getTitle() {
+	public function getTitle(): ?string
+    {
 		return $this->getValueByOid(self::OID_title);
 	}
 
-	/**
-	 * @param string $oid
-	 *
-	 * @return string|null
-	 */
-	private function getValueByOid($oid) {
+    /**
+     * @param string $oid
+     *
+     * @return string|null
+     */
+	private function getValueByOid(string $oid): ?string
+    {
 		$identifiers = $this->object->findByOid($oid);
 		if(count($identifiers)) {
 			return $identifiers[0]->getSiblings()[0]->__toString();

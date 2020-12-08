@@ -44,7 +44,7 @@ class CMSBaseTest extends TestCase
 
 class Bad extends CMSBase
 {
-    public static function createFromContent(string $content): Bad
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, MadMap::class, Sequence::class));
     }

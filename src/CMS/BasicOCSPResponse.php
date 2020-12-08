@@ -35,7 +35,7 @@ class BasicOCSPResponse extends CMSBase
      * @return BasicOCSPResponse
      * @throws FormatException
      */
-    public static function createFromContent(string $content): self
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\BasicOCSPResponse::class, Sequence::class));
     }

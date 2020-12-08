@@ -13,7 +13,7 @@ class SignedDataTest extends TestCase
     public function testCreate()
     {
         $signedData = SignedData::createFromContent($this->getAttached());
-        $this->assertInstanceOf(SignedData::class, $signedData);
+        self::assertInstanceOf(SignedData::class, $signedData);
     }
 
     public function testCreateMalformed()
@@ -26,40 +26,40 @@ class SignedDataTest extends TestCase
     {
         $signedData = SignedData::createFromContent($this->getAttached());
         $signerInfo = $signedData->getSignerInfo();
-        $this->assertCount(1, $signerInfo);
-        $this->assertContainsOnlyInstancesOf(SignerInfo::class, $signerInfo);
+        self::assertCount(1, $signerInfo);
+        self::assertContainsOnlyInstancesOf(SignerInfo::class, $signerInfo);
     }
 
     public function testExtractCertificates()
     {
         $signedData = SignedData::createFromContent($this->getAttached());
         $certs      = $signedData->extractCertificates();
-        $this->assertCount(2, $certs);
-        $this->assertContainsOnlyInstancesOf(Certificate::class, $certs);
+        self::assertCount(2, $certs);
+        self::assertContainsOnlyInstancesOf(Certificate::class, $certs);
     }
 
     public function testHasData()
     {
         $signedData = SignedData::createFromContent($this->getAttached());
-        $this->assertTrue($signedData->hasData());
+        self::assertTrue($signedData->hasData());
 
         $signedData = SignedData::createFromContent($this->getDetached());
-        $this->assertFalse($signedData->hasData());
+        self::assertFalse($signedData->hasData());
     }
 
     public function testGetData()
     {
         $signedData = SignedData::createFromContent($this->getAttached());
-        $this->assertSame('1', $signedData->getData());
+        self::assertSame('1', $signedData->getData());
 
         $signedData = SignedData::createFromContent($this->getDetached());
-        $this->assertNull($signedData->getData());
+        self::assertNull($signedData->getData());
     }
 
     public function testGetBinary()
     {
         $signedData = SignedData::createFromContent($this->getDetached());
-        $this->assertSame(base64_decode($this->getDetached()), $signedData->getBinary());
+        self::assertSame(base64_decode($this->getDetached()), $signedData->getBinary());
     }
 
     private function getAttached()

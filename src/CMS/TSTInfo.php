@@ -39,7 +39,7 @@ class TSTInfo extends CMSBase
      * @return TSTInfo
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): CMSBase
     {
         return new self(self::makeFromContent($content, Maps\TSTInfo::class, Sequence::class));
     }
@@ -48,15 +48,16 @@ class TSTInfo extends CMSBase
      * @return Accuracy|null
      * @throws Exception
      */
-    public function getAccuracy()
+    public function getAccuracy(): ?Accuracy
     {
+        $return = null;
         /** @var Sequence[] $sequences */
         $sequences = $this->object->findChildrenByType(Sequence::class);
         if (count($sequences) > 1) {
-            return new Accuracy($sequences[1]);
+            $return = new Accuracy($sequences[1]);
         }
 
-        return null;
+        return $return;
     }
 
     /**
@@ -91,7 +92,7 @@ class TSTInfo extends CMSBase
      * @return MessageImprint
      * @throws Exception
      */
-    public function getMessageImprint()
+    public function getMessageImprint(): MessageImprint
     {
         return new MessageImprint($this->object->findChildrenByType(Sequence::class)[0]);
     }
@@ -99,41 +100,45 @@ class TSTInfo extends CMSBase
     /**
      * @return Integer|ASN1ObjectInterface
      * @throws Exception
+     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
      */
-    public function getNonce()
+    public function getNonce(): ?\FG\ASN1\Universal\Integer
     {
+        $return = null;
         $integers = $this->object->findChildrenByType(Integer::class);
         if (count($integers) == 3) {
             $binary = $integers[2]->getBinary();
 
-            return Integer::fromBinary($binary);
+            $return = Integer::fromBinary($binary);
         }
 
-        return null;
+        return $return;
     }
 
     /**
      * @return Boolean|null
      * @throws Exception
+     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
      */
-    public function getOrdering()
+    public function getOrdering(): ?\FG\ASN1\Universal\Boolean
     {
+        $return = null;
         /** @var Boolean[] $booleans */
         $booleans = $this->object->findChildrenByType(Boolean::class);
         if (count($booleans)) {
             $binary = $booleans[0]->getBinary();
 
-            return Boolean::fromBinary($binary);
+            $return = Boolean::fromBinary($binary);
         }
 
-        return null;
+        return $return;
     }
 
     /**
      * @return ObjectIdentifier|ASN1ObjectInterface
      * @throws Exception
      */
-    public function getPolicy()
+    public function getPolicy(): ObjectIdentifier
     {
         $binary = $this->object->findChildrenByType(ObjectIdentifier::class)[0]->getBinary();
 
@@ -143,8 +148,9 @@ class TSTInfo extends CMSBase
     /**
      * @return Integer|ASN1ObjectInterface
      * @throws Exception
+     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
      */
-    public function getSerialNumber()
+    public function getSerialNumber(): ?\FG\ASN1\Universal\Integer
     {
         $binary = $this->object->findChildrenByType(Integer::class)[1]->getBinary();
 
@@ -157,16 +163,17 @@ class TSTInfo extends CMSBase
      * @return GeneralName|null
      * @throws Exception
      */
-    public function getTsa()
+    public function getTsa(): ?GeneralName
     {
+        $return = null;
         /** @var ExplicitlyTaggedObject[] $explicits */
         $explicits = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         foreach ($explicits as $explicit) {
             if ($explicit->getIdentifier()->getTagNumber() == 0) {
-                return new GeneralName($explicit);
+                $return = new GeneralName($explicit);
             }
         }
 
-        return null;
+        return $return;
     }
 }

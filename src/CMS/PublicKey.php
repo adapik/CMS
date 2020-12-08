@@ -33,7 +33,7 @@ class PublicKey extends CMSBase
      * @return PublicKey
      * @throws Exception\FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\PublicKey::class, Sequence::class));
     }
@@ -41,7 +41,7 @@ class PublicKey extends CMSBase
     /**
      * @return BitString|ASN1ObjectInterface
      */
-    public function getKey()
+    public function getKey(): BitString
     {
         /** @var BitString $bitString */
         $bitString = $this->object->getChildren()[1];
@@ -52,7 +52,7 @@ class PublicKey extends CMSBase
     /**
      * @return AlgorithmIdentifier
      */
-    public function getKeyAlgorithm()
+    public function getKeyAlgorithm(): AlgorithmIdentifier
     {
         return new AlgorithmIdentifier($this->object->getChildren()[0]);
     }

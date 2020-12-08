@@ -10,7 +10,6 @@
 
 namespace Adapik\CMS;
 
-use Adapik\CMS\Exception\FormatException;
 use Exception;
 use FG\ASN1\ASN1Object;
 use FG\ASN1\ExplicitlyTaggedObject;
@@ -35,25 +34,26 @@ class RevocationValues extends UnsignedAttribute
      * @param string $content
      *
      * @return RevocationValues
-     * @throws FormatException
+     * @throws Exception
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
-        return new self(self::makeFromContent($content, Maps\RevocationValues::class, Sequence::class));
+        throw new Exception("RevocationValues couldn't be created such way");
     }
 
     /**
      * @return BasicOCSPResponse|null
      * @throws Exception
      */
-    public function getBasicOCSPResponse()
+    public function getBasicOCSPResponse(): ?BasicOCSPResponse
     {
+        $return = null;
         $basicOCSPResponse = $this->getDataByTag(1);
 
         if ($basicOCSPResponse)
-            return new BasicOCSPResponse($basicOCSPResponse);
+            $return = new BasicOCSPResponse($basicOCSPResponse);
 
-        return null;
+        return $return;
     }
 
     /**
@@ -61,8 +61,9 @@ class RevocationValues extends UnsignedAttribute
      * @return ASN1Object|mixed|null
      * @throws Exception
      */
-    private function getDataByTag(int $tagNumber)
+    private function getDataByTag(int $tagNumber): ?ASN1Object
     {
+        $return = null;
         /** @var ExplicitlyTaggedObject[] $tagged */
         $tagged = $this->object->findChildrenByType(Set::class)[0]->getChildren()[0]->findChildrenByType(ExplicitlyTaggedObject::class);
 
@@ -71,27 +72,27 @@ class RevocationValues extends UnsignedAttribute
                 if ($item->getIdentifier()->getTagNumber() == $tagNumber) {
                     $sequence = $item->getChildren()[0];
                     if (count($sequence->getChildren()) > 0) {
-                        return $sequence->getChildren()[0];
-                    } else {
-                        return null;
+                        $return = $sequence->getChildren()[0];
+                        break;
                     }
                 }
             }
         }
-        return null;
+        return $return;
     }
 
     /**
      * @return CertificateList|null
      * @throws Exception
      */
-    public function getCertificateList()
+    public function getCertificateList(): ?CertificateList
     {
+        $return = null;
         $certificateList = $this->getDataByTag(0);
 
         if ($certificateList)
-            return new CertificateList($certificateList);
+            $return = new CertificateList($certificateList);
 
-        return null;
+        return $return;
     }
 }

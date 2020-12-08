@@ -34,7 +34,7 @@ class RevocationInfoChoices extends CMSBase
      * @return RevocationInfoChoices
      * @throws Exception\FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\RevocationInfoChoices::class, ExplicitlyTaggedObject::class));
     }
@@ -42,7 +42,7 @@ class RevocationInfoChoices extends CMSBase
     /**
      * @return CertificateList[]
      */
-    public function getCRL()
+    public function getCRL(): array
     {
         $crl = [];
 
@@ -66,7 +66,7 @@ class RevocationInfoChoices extends CMSBase
      * @return Sequence[]
      * @throws ParserException
      */
-    public function getOther()
+    public function getOther(): array
     {
         $other = [];
 

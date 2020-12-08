@@ -44,7 +44,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return SignerInfo
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\SignerInfo::class, Sequence::class));
     }
@@ -54,7 +54,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return string
      * @throws Exception
      */
-    public function getSignatureValue()
+    public function getSignatureValue(): string
     {
         return bin2hex(
             $this->getSignature()->getBinaryContent()
@@ -78,21 +78,25 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return string
      * @throws Exception
      */
-    public function getSigningCertDigest()
+    public function getSigningCertDigest(): ?string
     {
+        $return = null;
+
         $signingCertificateV2 = $this->getSigningCertificateV2();
 
-        if (!$signingCertificateV2)
-            return null;
+        if ($signingCertificateV2) {
 
-        $digest = (string)$signingCertificateV2
-            ->getChildren()[1]
-            ->getChildren()[0]
-            ->getChildren()[0]
-            ->getChildren()[0]
-            ->findChildrenByType(OctetString::class)[0];
+            $digest = (string)$signingCertificateV2
+                ->getChildren()[1]
+                ->getChildren()[0]
+                ->getChildren()[0]
+                ->getChildren()[0]
+                ->findChildrenByType(OctetString::class)[0];
 
-        return bin2hex($digest);
+            $return = bin2hex($digest);
+        }
+
+        return $return;
     }
 
     /**
@@ -161,7 +165,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return string
      * @throws Exception
      */
-    public function getPublicKeyAlgorithm()
+    public function getPublicKeyAlgorithm(): string
     {
         return (string)$this->object
             ->findChildrenByType(Sequence::class)[2]
@@ -173,7 +177,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return string
      * @throws Exception
      */
-    public function getDigestAlgorithm()
+    public function getDigestAlgorithm(): string
     {
         return (string)$this->object
             ->findChildrenByType(Sequence::class)[1]
@@ -185,7 +189,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return string
      * @throws Exception
      */
-    public function defineType()
+    public function defineType(): string
     {
         if ($this->isLongType1()) {
             return self::TYPE_X_LONG_TYPE1;
@@ -207,7 +211,7 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return bool
      * @throws Exception
      */
-    protected function isLongType1()
+    protected function isLongType1(): bool
     {
         if ($this->isBES() && $this->isT() && $this->getUnsignedAttributes()->getEscTimeStamp() && $this->hasEvidences()) {
             return true;
@@ -221,13 +225,15 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return bool
      * @throws Exception
      */
-    protected function isBES()
+    protected function isBES(): bool
     {
+        $return = false;
+
         if ($this->getSigningCertificateV2() && $this->getMessageDigest() && $this->getContentType()) {
-            return true;
+            $return = true;
         }
 
-        return false;
+        return $return;
     }
 
     /**
@@ -235,8 +241,9 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return string
      * @throws Exception
      */
-    public function getMessageDigest()
+    public function getMessageDigest(): ?string
     {
+        $return = null;
         $messageDigest = $this->getSignedAttributes()->findByOid(self::OID_MESSAGE_DIGEST);
         if (!empty($messageDigest)) {
             $digest = (string)$messageDigest[0]
@@ -244,10 +251,10 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
                 ->findChildrenByType(OctetString::class)[0];
 
 
-            return bin2hex($digest);
+            $return = bin2hex($digest);
         }
 
-        return null;
+        return $return;
     }
 
     /**
@@ -255,14 +262,15 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return ObjectIdentifier
      * @throws Exception
      */
-    protected function getContentType()
+    protected function getContentType(): ?ObjectIdentifier
     {
+        $return = null;
         $contentType = $this->getSignedAttributes()->findByOid(self::OID_CONTENT_TYPE);
         if (!empty($contentType)) {
-            return $contentType[0]->getSiblings()[0]->findChildrenByType(ObjectIdentifier::class)[0];
+            $return = $contentType[0]->getSiblings()[0]->findChildrenByType(ObjectIdentifier::class)[0];
         }
 
-        return null;
+        return $return;
     }
 
     /**
@@ -270,46 +278,51 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return bool
      * @throws Exception
      */
-    protected function isT()
+    protected function isT(): bool
     {
+        $return = false;
         if ($this->isBES() && $this->getUnsignedAttributes()->getTimeStampToken()) {
-            return true;
+            $return = true;
         }
 
-        return false;
+        return $return;
     }
 
     /**
      * @return UnsignedAttributes|null
      * @throws Exception
      */
-    public function getUnsignedAttributes()
+    public function getUnsignedAttributes(): ?UnsignedAttributes
     {
+        $return = null;
+
         $unsignedAttributes = $this->findUnsignedAttributes();
 
         if ($unsignedAttributes) {
-            return new UnsignedAttributes($unsignedAttributes);
-        } else {
-            return null;
+            $return = new UnsignedAttributes($unsignedAttributes);
         }
+
+        return $return;
     }
 
     /**
      * @return ExplicitlyTaggedObject|null
      * @throws Exception
      */
-    protected function findUnsignedAttributes()
+    protected function findUnsignedAttributes(): ?ExplicitlyTaggedObject
     {
+        $return = null;
+
         $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         $attributes = array_filter($exTaggedObjects, function ($value) {
             return $value->getIdentifier()->getTagNumber() === 1;
         });
 
         if (count($attributes) > 0) {
-            return array_pop($attributes);
-        } else {
-            return null;
+            $return = array_pop($attributes);
         }
+
+        return $return;
     }
 
     /**
@@ -317,8 +330,10 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      * @return bool
      * @throws Exception
      */
-    protected function hasEvidences()
+    protected function hasEvidences(): bool
     {
+        $return = false;
+
         $unsignedAttributes = $this->getUnsignedAttributes();
         if ($unsignedAttributes) {
             $revValues = $unsignedAttributes->getRevocationValues();
@@ -326,19 +341,19 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
             $certValues = $unsignedAttributes->getCertificateValues();
             $certRefs = $unsignedAttributes->getCertificateRefs();
             if (!empty($revValues) && !empty($revRefs) && !empty($certValues) && !empty($certRefs)) {
-                return true;
+                $return = true;
             }
         }
 
-        return false;
+        return $return;
     }
 
     /**
      * Returns users signing time. Be careful, cause it's users' computer time.
-     * @return UTCTime|null
+     * @return UTCTime|ASN1ObjectInterface|null
      * @throws ParserException
      */
-    public function getSigningTime()
+    public function getSigningTime(): ?UTCTime
     {
         $SignedTimeStamp = $this->getSignedAttributes()->findByOid(self::OID_SIGNING_TIME);
         if ($SignedTimeStamp) {
@@ -354,14 +369,16 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      */
     public function getIssuerAndSerialNumber(): ?IssuerAndSerialNumber
     {
+        $return = null;
+
         $identifier = $this->object->getChildren()[1];
 
         // issuerAndSerialNumber
         if ($identifier instanceof Sequence) {
-            return new IssuerAndSerialNumber($identifier);
+            $return = new IssuerAndSerialNumber($identifier);
         }
 
-        return null;
+        return $return;
     }
 
     /**
@@ -370,23 +387,25 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
      */
     public function getSubjectKeyIdentifier()
     {
+        $return = null;
+
         $identifier = $this->object->getChildren()[1];
 
         // subjectKeyIdentifier
         if ($identifier instanceof AbstractTaggedObject) {
             $binary = $identifier->getBinary();
 
-            return OctetString::fromBinary($binary);
+            $return = OctetString::fromBinary($binary);
         }
 
-        return null;
+        return $return;
     }
 
     /**
      * @return ExplicitlyTaggedObject
      * @throws Exception
      */
-    protected function getUnsignedAttributesPrivate()
+    protected function getUnsignedAttributesPrivate(): ExplicitlyTaggedObject
     {
         $exTaggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
         $attributes = array_filter($exTaggedObjects, function ($value) {

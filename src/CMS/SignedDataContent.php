@@ -144,15 +144,15 @@ class SignedDataContent extends CMSBase
      * @return RevocationInfoChoices|null
      * @throws Exception
      */
-    public function getRevocationInfoChoices()
+    public function getRevocationInfoChoices(): ?RevocationInfoChoices
     {
+        $return = null;
         $revs = $this->getTaggedObjectByTagNumber(Maps\SignedDataContent::CLR_TAG_NUMBER);
 
-        if ($revs) {
-            return new RevocationInfoChoices($revs);
-        }
+        if ($revs)
+            $return = new RevocationInfoChoices($revs);
 
-        return null;
+        return $return;
     }
 
     /**

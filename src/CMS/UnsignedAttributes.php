@@ -36,7 +36,7 @@ class UnsignedAttributes extends CMSBase
      * @return UnsignedAttributes
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\UnsignedAttributes::class, ExplicitlyTaggedObject::class));
     }
@@ -44,7 +44,7 @@ class UnsignedAttributes extends CMSBase
     /**
      * @return UnsignedAttribute[]
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         $attributes = [];
         foreach ($this->object->getChildren() as $child) {
@@ -85,15 +85,16 @@ class UnsignedAttributes extends CMSBase
      * @param $oid
      * @return ASN1ObjectInterface|null
      */
-    protected function findByOid($oid)
+    protected function findByOid($oid): ?ASN1ObjectInterface
     {
+        $return = null;
         foreach ($this->object->getChildren() as $child) {
             if ($child->getChildren()[0]->__toString() == $oid) {
-                return $child;
+                $return = $child;
             }
         }
 
-        return null;
+        return $return;
     }
 
     /**
@@ -146,13 +147,14 @@ class UnsignedAttributes extends CMSBase
      */
     protected function getAttributeAsInstance(string $class): ?CMSInterface
     {
+        $return = null;
         $attribute = $this->findByOid(call_user_func($class . '::getOid'));
 
         if ($attribute) {
-            return new $class($attribute);
+            $return = new $class($attribute);
         }
 
-        return null;
+        return $return;
     }
 
     /**

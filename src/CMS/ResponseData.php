@@ -15,7 +15,6 @@ use Exception;
 use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\GeneralizedTime;
-use FG\ASN1\Universal\OctetString;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -36,7 +35,7 @@ class ResponseData extends CMSBase
      * @return ResponseData
      * @throws FormatException
      */
-    public static function createFromContent(string $content)
+    public static function createFromContent(string $content): self
     {
         return new self(self::makeFromContent($content, Maps\ResponseData::class, Sequence::class));
     }
@@ -45,7 +44,7 @@ class ResponseData extends CMSBase
      * @return Extension[]
      * @throws Exception
      */
-    public function getExtensions()
+    public function getExtensions(): array
     {
         $extensions = [];
         $taggedObjects = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
@@ -59,35 +58,34 @@ class ResponseData extends CMSBase
     }
 
     /**
-	 * @return ASN1ObjectInterface|GeneralizedTime
+     * @return ASN1ObjectInterface|GeneralizedTime
      * @throws Exception
      */
     public function getProducedAt()
     {
         /** @var GeneralizedTime $producedAt */
-		$binary = $this->object->findChildrenByType(GeneralizedTime::class)[0]->getBinary();
+        $binary = $this->object->findChildrenByType(GeneralizedTime::class)[0]->getBinary();
 
-		return GeneralizedTime::fromBinary($binary);
+        return GeneralizedTime::fromBinary($binary);
     }
 
     /**
-     * FIXME: shouldn't return ASN1Object
-     * @return Sequence|OctetString
+     * @return ASN1ObjectInterface
      * @throws Exception
      */
-    public function getResponderID()
+    public function getResponderID(): ASN1ObjectInterface
     {
         /** @var ExplicitlyTaggedObject $responderID */
         $responderID = $this->object->findChildrenByType(ExplicitlyTaggedObject::class)[0];
 
-        return $responderID->getChildren()[0];
+        return $responderID->getChildren()[0]->detach();
     }
 
     /**
      * @return SingleResponse[]
      * @throws Exception
      */
-    public function getResponses()
+    public function getResponses(): array
     {
         $responses = $this->object->findChildrenByType(Sequence::class)[0];
 

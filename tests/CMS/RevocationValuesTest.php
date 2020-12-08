@@ -14,7 +14,6 @@ namespace CMS;
 
 use Adapik\CMS\RevocationValues;
 use Adapik\CMS\SignedData;
-use Exception;
 use PHPUnit\Framework\TestCase;
 
 class RevocationValuesTest extends TestCase
@@ -28,8 +27,9 @@ class RevocationValuesTest extends TestCase
             self::assertNull($revocationValues->getCertificateList());
             self::assertNotNull($revocationValues->getBasicOCSPResponse());
 
-            self::expectException(Exception::class);
-            RevocationValues::createFromContent($revocationValues->getBinaryContent());
+            $binary = $revocationValues->getBinary();
+            $newRevocationValues = RevocationValues::createFromContent($revocationValues->getBinary());
+            self::assertEquals($binary, $newRevocationValues->getBinary());
 
             return;
         }
@@ -39,5 +39,4 @@ class RevocationValuesTest extends TestCase
     {
         return file_get_contents(__DIR__ . '/../fixtures/cms_attached_chain.sig');
     }
-
 }

@@ -38,7 +38,7 @@ class RevocationValues extends UnsignedAttribute
      */
     public static function createFromContent(string $content): CMSBase
     {
-        throw new Exception("RevocationValues couldn't be created such way");
+        return new self(self::makeFromContent($content, Maps\RevocationValues::class, Sequence::class));
     }
 
     /**

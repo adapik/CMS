@@ -28,37 +28,47 @@ abstract class RevocationValues
      * }
      * OtherRevValType ::= OBJECT IDENTIFIER
      */
-
     const MAP = [
         'type' => Identifier::SEQUENCE,
         'children' => [
-            'certificateList' => [
-                'type' => Identifier::SEQUENCE,
-                'constant' => 0,
-                'explicit' => true,
-                'optional' => true,
+            'contentType' => ['type' => Identifier::OBJECT_IDENTIFIER],
+            'set' => [
+                'type' => Identifier::SET,
                 'min' => 1,
-                'max' => -1,
-                'children' => CertificateList::MAP,
-            ],
-            'basicOCSPResponses' => [
-                'type' => Identifier::SEQUENCE,
-                'constant' => 1,
-                'explicit' => true,
-                'optional' => true,
-                'min' => 1,
-                'max' => -1,
-                'children' => BasicOCSPResponse::MAP,
-            ],
-            'otherRevValues' => [
-                'type' => Identifier::SEQUENCE,
-                'constant' => 1,
-                'optional' => true,
+                'max' => 1,
                 'children' => [
-                    'OtherRevValType' => ['type' => Identifier::OBJECT_IDENTIFIER],
-                    'OtherRevVals' => ['type' => Identifier::ANY],
+                    'type' => Identifier::SEQUENCE,
+                    'children' => [
+                        'certificateList' => [
+                            'type' => Identifier::SEQUENCE,
+                            'constant' => 0,
+                            'explicit' => true,
+                            'optional' => true,
+                            'min' => 1,
+                            'max' => -1,
+                            'children' => CertificateList::MAP,
+                        ],
+                        'basicOCSPResponses' => [
+                            'type' => Identifier::SEQUENCE,
+                            'constant' => 1,
+                            'explicit' => true,
+                            'optional' => true,
+                            'min' => 1,
+                            'max' => -1,
+                            'children' => BasicOCSPResponse::MAP,
+                        ],
+                        'otherRevValues' => [
+                            'type' => Identifier::SEQUENCE,
+                            'constant' => 1,
+                            'optional' => true,
+                            'children' => [
+                                'OtherRevValType' => ['type' => Identifier::OBJECT_IDENTIFIER],
+                                'OtherRevVals' => ['type' => Identifier::ANY],
+                            ],
+                        ],
+                    ],
                 ],
-            ],
-        ],
+            ]
+        ]
     ];
 }

@@ -19,6 +19,7 @@ class RevocationInfoChoicesTest extends TestCase
 {
     public function testBase() {
         $signedData = SignedData::createFromContent(file_get_contents(__DIR__ . '/../fixtures/setOfUnsignedCMS.cms'));
+
         $choices = $signedData->getSignedDataContent()->getRevocationInfoChoices();
 
         self::assertNull($choices);

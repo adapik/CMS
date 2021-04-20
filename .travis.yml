@@ -1,6 +1,6 @@
 os: linux
 language: php
-dist: trusty
+dist: bionic
 env:
   global:
     - XDEBUG_MODE=coverage

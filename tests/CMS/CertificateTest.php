@@ -30,13 +30,13 @@ class CertificateTest extends TestCase
      */
     private $caCert;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->userCert = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_user.crt'));
         $this->caCert   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_ca.crt'));
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->userCert = null;
         $this->caCert   = null;

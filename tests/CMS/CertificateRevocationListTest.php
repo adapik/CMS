@@ -17,12 +17,12 @@ class CertificateRevocationListTest extends TestCase
      */
     private $crl;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->crl = base64_decode(file_get_contents(__DIR__ . '/../fixtures/crl.crl'));
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->crl = null;
     }

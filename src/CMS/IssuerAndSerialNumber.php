@@ -11,6 +11,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CMSInterface;
 use Exception;
 use FG\ASN1\Universal\Integer;
 use FG\ASN1\Universal\Sequence;
@@ -33,7 +34,7 @@ class IssuerAndSerialNumber extends CMSBase
      * @return IssuerAndSerialNumber
      * @throws FormatException
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\IssuerAndSerialNumber::class, Sequence::class));
     }

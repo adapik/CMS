@@ -4,6 +4,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Adapik\CMS\Interfaces\CertificateInterface;
+use Adapik\CMS\Interfaces\CMSInterface;
 use Exception;
 use FG\ASN1;
 use FG\ASN1\ASN1Object;
@@ -42,7 +43,7 @@ class Certificate extends CMSBase implements CertificateInterface
      * @return Certificate
      * @throws FormatException
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\Certificate::class, Sequence::class));
     }

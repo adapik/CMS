@@ -11,6 +11,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CMSInterface;
 use Exception;
 use FG\ASN1\AbstractTaggedObject;
 use FG\ASN1\ASN1ObjectInterface;
@@ -36,7 +37,7 @@ class SingleResponse extends CMSBase
      * @return SingleResponse
      * @throws FormatException
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\SingleResponse::class, Sequence::class));
     }

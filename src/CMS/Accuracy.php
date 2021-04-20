@@ -10,6 +10,7 @@
 
 namespace Adapik\CMS;
 
+use Adapik\CMS\Interfaces\CMSInterface;
 use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\Universal\Integer;
@@ -34,7 +35,7 @@ class Accuracy extends CMSBase
      * @return Accuracy
      * @throws Exception\FormatException
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\Accuracy::class, Sequence::class));
     }

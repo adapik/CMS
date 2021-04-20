@@ -2,6 +2,7 @@
 
 namespace Adapik\CMS;
 
+use Adapik\CMS\Interfaces\CMSInterface;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -21,7 +22,7 @@ class Name extends CMSBase
      * @return Name
      * @throws Exception\FormatException
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\Name::class, Sequence::class));
     }

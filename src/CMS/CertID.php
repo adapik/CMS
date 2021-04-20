@@ -11,6 +11,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CMSInterface;
 use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\Universal\Integer;
@@ -35,7 +36,7 @@ class CertID extends CMSBase
      * @return CertID
      * @throws FormatException
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\CertID::class, Sequence::class));
     }

@@ -10,6 +10,7 @@
 
 namespace Adapik\CMS;
 
+use Adapik\CMS\Interfaces\CMSInterface;
 use Exception;
 use FG\ASN1\ASN1Object;
 use FG\ASN1\ExplicitlyTaggedObject;
@@ -34,7 +35,7 @@ class TBSCertificate extends CMSBase
      * @return static
      * @throws Exception
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\TBSCertificate::class, Sequence::class));
     }

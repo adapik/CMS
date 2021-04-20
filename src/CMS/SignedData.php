@@ -3,6 +3,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CMSInterface;
 use Exception;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\NullObject;
@@ -29,7 +30,7 @@ class SignedData extends CMSBase
      * @return SignedData
      * @throws FormatException
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\SignedData::class, Sequence::class));
     }

@@ -10,6 +10,7 @@
 
 namespace Adapik\CMS;
 
+use Adapik\CMS\Interfaces\CMSInterface;
 use FG\ASN1\Universal\OctetString;
 use FG\ASN1\Universal\Sequence;
 
@@ -26,7 +27,7 @@ class MessageImprint extends CMSBase
      */
     protected $object;
 
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\MessageImprint::class, Sequence::class));
     }

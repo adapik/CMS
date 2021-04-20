@@ -2,6 +2,7 @@
 
 namespace Adapik\CMS;
 
+use Adapik\CMS\Interfaces\CMSInterface;
 use Exception;
 use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\Exception\ParserException;
@@ -24,7 +25,7 @@ class UnsignedAttribute extends CMSBase
         return static::$oid;
     }
 
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         throw new Exception("Unsigned attribute can't be created such way");
     }

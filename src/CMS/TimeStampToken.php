@@ -11,6 +11,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CMSInterface;
 use Falseclock\AdvancedCMS\TimeStampResponse;
 use FG\ASN1\Exception\ParserException;
 use FG\ASN1\Universal\ObjectIdentifier;
@@ -32,7 +33,7 @@ class TimeStampToken extends UnsignedAttribute
      * @return TimeStampToken
      * @throws FormatException
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\TimeStampToken::class, Sequence::class));
     }

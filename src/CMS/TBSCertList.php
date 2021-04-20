@@ -11,6 +11,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CMSInterface;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -31,7 +32,7 @@ class TBSCertList extends CMSBase
      * @return TBSCertList
      * @throws FormatException
      */
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\TBSCertList::class, Sequence::class));
     }

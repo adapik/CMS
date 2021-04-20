@@ -22,5 +22,5 @@ interface CMSInterface
      * @param string $content
      * @return mixed
      */
-    public static function createFromContent(string $content): CMSBase;
+    public static function createFromContent(string $content): CMSInterface;
 }

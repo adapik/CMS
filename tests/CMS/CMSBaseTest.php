@@ -14,6 +14,7 @@ namespace CMS;
 
 use Adapik\CMS\CMSBase;
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\Interfaces\CMSInterface;
 use Adapik\CMS\SignedData;
 use FG\ASN1\Identifier;
 use FG\ASN1\Universal\Sequence;
@@ -44,7 +45,7 @@ class CMSBaseTest extends TestCase
 
 class Bad extends CMSBase
 {
-    public static function createFromContent(string $content): CMSBase
+    public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, MadMap::class, Sequence::class));
     }

@@ -4,6 +4,8 @@ namespace Adapik\Test\CMS;
 
 use Adapik\CMS\Certificate;
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\PublicKey;
+use FG\ASN1\Universal\BitString;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -45,7 +47,7 @@ class CertificateTest extends TestCase
     public function testCreate()
     {
         $signedData = Certificate::createFromContent($this->userCert);
-        $this->assertInstanceOf(Certificate::class, $signedData);
+        self::assertInstanceOf(Certificate::class, $signedData);
     }
 
     public function testCreateMalformed()
@@ -57,73 +59,73 @@ class CertificateTest extends TestCase
     public function testParseCert()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertInstanceOf(Certificate::class, $cert);
+        self::assertInstanceOf(Certificate::class, $cert);
     }
 
     public function testGetSerial()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals(self::CERT_SERIAL, $cert->getSerial());
+        self::assertEquals(self::CERT_SERIAL, $cert->getSerial());
     }
 
     public function testGetSubjectKeyIdentifier()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals(self::CERT_SUBJECT_KEY_ID, $cert->getSubjectKeyIdentifier());
+        self::assertEquals(self::CERT_SUBJECT_KEY_ID, $cert->getSubjectKeyIdentifier());
     }
 
     public function testGetAuthorityKeyIdentifier()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals(self::CERT_ISSUER_KEY_ID, $cert->getAuthorityKeyIdentifier());
+        self::assertEquals(self::CERT_ISSUER_KEY_ID, $cert->getAuthorityKeyIdentifier());
     }
 
     public function testGetOcspUris()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals([self::CERT_OCSP_URI], $cert->getOcspUris());
+        self::assertEquals([self::CERT_OCSP_URI], $cert->getOcspUris());
     }
 
     public function testGetIssuer()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals('2.5.4.6: FR; 2.5.4.8: Paris; 2.5.4.7: Paris; 2.5.4.10: Gandi; 2.5.4.3: Gandi Standard SSL CA 2', (string) $cert->getIssuer());
+        self::assertEquals('2.5.4.6: FR; 2.5.4.8: Paris; 2.5.4.7: Paris; 2.5.4.10: Gandi; 2.5.4.3: Gandi Standard SSL CA 2', (string) $cert->getIssuer());
     }
 
     public function testGetSubject()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals('2.5.4.11: Domain Control Validated; 2.5.4.11: Gandi Standard Wildcard SSL; 2.5.4.3: *.php.net', (string) $cert->getSubject());
+        self::assertEquals('2.5.4.11: Domain Control Validated; 2.5.4.11: Gandi Standard Wildcard SSL; 2.5.4.3: *.php.net', (string) $cert->getSubject());
     }
 
     public function testGetValidNotBefore()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals('2016-06-02T00:00:00+00:00', (string) $cert->getValidNotBefore());
+        self::assertEquals('2016-06-02T00:00:00+00:00', (string) $cert->getValidNotBefore());
     }
 
     public function testGetValidNotAfter()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertEquals('2019-06-02T23:59:59+00:00', (string) $cert->getValidNotAfter());
+        self::assertEquals('2019-06-02T23:59:59+00:00', (string) $cert->getValidNotAfter());
     }
 
     public function testIsCAFalse()
     {
         $cert = Certificate::createFromContent($this->userCert);
-        $this->assertFalse($cert->isCa());
+        self::assertFalse($cert->isCa());
     }
 
     public function testIsCATrue()
     {
         $cert = Certificate::createFromContent($this->caCert);
-        $this->assertTrue($cert->isCa());
+        self::assertTrue($cert->isCa());
     }
 
     public function testGetPolicies()
     {
         $cert = Certificate::createFromContent($this->caCert);
-        $this->assertSame([
+        self::assertSame([
             '1.3.6.1.4.1.6449.1.2.2.26',
             '2.23.140.1.2.1',
         ], $cert->getCertPolicies());
@@ -132,7 +134,7 @@ class CertificateTest extends TestCase
     public function testGetExtendedKeyUsage()
     {
         $cert = Certificate::createFromContent($this->caCert);
-        $this->assertSame([
+        self::assertSame([
             '1.3.6.1.5.5.7.3.1',
             '1.3.6.1.5.5.7.3.2',
         ], $cert->getExtendedKeyUsage());
@@ -141,6 +143,23 @@ class CertificateTest extends TestCase
     public function testGetBinary()
     {
         $cert = Certificate::createFromContent($this->caCert);
-        $this->assertSame($this->caCert, $cert->getBinary());
+        self::assertSame($this->caCert, $cert->getBinary());
+    }
+    
+    public function testSetPublicKey() {
+        $cert = Certificate::createFromContent($this->caCert);
+        self::assertInstanceOf(PublicKey::class, $cert->getPublicKey());
+    }
+
+    public function testGetSignature() {
+        $cert = Certificate::createFromContent($this->caCert);
+        self::assertInstanceOf(BitString::class, $cert->getSignature());
+    }
+
+    public function testGetExtensions() {
+        $cert = Certificate::createFromContent($this->userCert);
+        $extensions = $cert->getExtensions();
+
+        self::assertCount(9,$extensions);
     }
 }

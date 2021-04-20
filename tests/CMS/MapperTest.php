@@ -19,22 +19,22 @@ class MapperTest extends TestCase
         $userCert     = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_user.crt'));
         $sequence     = \FG\ASN1\ASN1Object::fromFile($userCert);
         $mappedObject = (new Mapper())->map($sequence, $map);
-        $this->assertNotNull($mappedObject);
+        self::assertNotNull($mappedObject);
 
-        $this->assertArrayHasKey('tbsCertificate', $mappedObject);
-        $this->assertArrayHasKey('signatureAlgorithm', $mappedObject);
-        $this->assertArrayHasKey('signature', $mappedObject);
+        self::assertArrayHasKey('tbsCertificate', $mappedObject);
+        self::assertArrayHasKey('signatureAlgorithm', $mappedObject);
+        self::assertArrayHasKey('signature', $mappedObject);
 
         $tbsCertificate = $mappedObject['tbsCertificate'];
 
-        $this->assertArrayHasKey('version', $tbsCertificate);
-        $this->assertArrayHasKey('serialNumber', $tbsCertificate);
-        $this->assertArrayHasKey('signature', $tbsCertificate);
-        $this->assertArrayHasKey('issuer', $tbsCertificate);
-        $this->assertArrayHasKey('validity', $tbsCertificate);
-        $this->assertArrayHasKey('subject', $tbsCertificate);
-        $this->assertArrayHasKey('subjectPublicKeyInfo', $tbsCertificate);
-        $this->assertArrayHasKey('extensions', $tbsCertificate);
+        self::assertArrayHasKey('version', $tbsCertificate);
+        self::assertArrayHasKey('serialNumber', $tbsCertificate);
+        self::assertArrayHasKey('signature', $tbsCertificate);
+        self::assertArrayHasKey('issuer', $tbsCertificate);
+        self::assertArrayHasKey('validity', $tbsCertificate);
+        self::assertArrayHasKey('subject', $tbsCertificate);
+        self::assertArrayHasKey('subjectPublicKeyInfo', $tbsCertificate);
+        self::assertArrayHasKey('extensions', $tbsCertificate);
     }
 
     public function testMapSignerInfo()
@@ -43,14 +43,14 @@ class MapperTest extends TestCase
         $signerInfo   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/signer_info_cades_bes'));
         $sequence     = \FG\ASN1\ASN1Object::fromFile($signerInfo);
         $mappedObject = (new Mapper())->map($sequence, $map);
-        $this->assertNotNull($mappedObject);
+        self::assertNotNull($mappedObject);
 
-        $this->assertArrayHasKey('version', $mappedObject);
-        $this->assertArrayHasKey('signerIdentifier', $mappedObject);
-        $this->assertArrayHasKey('digestAlgorithm', $mappedObject);
-        $this->assertArrayHasKey('signedAttrs', $mappedObject);
-        $this->assertArrayHasKey('signatureAlgorithm', $mappedObject);
-        $this->assertArrayHasKey('signature', $mappedObject);
+        self::assertArrayHasKey('version', $mappedObject);
+        self::assertArrayHasKey('signerIdentifier', $mappedObject);
+        self::assertArrayHasKey('digestAlgorithm', $mappedObject);
+        self::assertArrayHasKey('signedAttrs', $mappedObject);
+        self::assertArrayHasKey('signatureAlgorithm', $mappedObject);
+        self::assertArrayHasKey('signature', $mappedObject);
     }
 
     public function testMapSignedData()
@@ -59,19 +59,19 @@ class MapperTest extends TestCase
         $signerInfo   = base64_decode(file_get_contents(__DIR__ . '/../fixtures/cms_attached_chain.sig'));
         $sequence     = \FG\ASN1\ASN1Object::fromFile($signerInfo);
         $mappedObject = (new Mapper())->map($sequence, $map);
-        $this->assertNotNull($mappedObject);
+        self::assertNotNull($mappedObject);
 
-        $this->assertArrayHasKey('contentType', $mappedObject);
-        $this->assertArrayHasKey('content', $mappedObject);
+        self::assertArrayHasKey('contentType', $mappedObject);
+        self::assertArrayHasKey('content', $mappedObject);
 
         $content = $mappedObject['content'];
 
-        $this->assertArrayHasKey('version', $content);
-        $this->assertArrayHasKey('digestAlgorithms', $content);
-        $this->assertArrayHasKey('encapsulatedContentInfo', $content);
-        $this->assertArrayHasKey('certificates', $content);
-        $this->assertCount(2, $content['certificates']);
-        $this->assertArrayHasKey('signerInfos', $content);
-        $this->assertCount(1, $content['signerInfos']);
+        self::assertArrayHasKey('version', $content);
+        self::assertArrayHasKey('digestAlgorithms', $content);
+        self::assertArrayHasKey('encapsulatedContentInfo', $content);
+        self::assertArrayHasKey('certificates', $content);
+        self::assertCount(2, $content['certificates']);
+        self::assertArrayHasKey('signerInfos', $content);
+        self::assertCount(1, $content['signerInfos']);
     }
 }

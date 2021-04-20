@@ -47,13 +47,17 @@ abstract class CMSBase implements CMSInterface
     {
         $object = ASN1Object::fromFile($content);
 
-        if (!$object instanceof $objectClass)
-            throw new FormatException(self::className($mapperClass) . ' must be type of ' . self::className($objectClass));
+        if (!$object instanceof $objectClass) {
+            throw new FormatException(
+                self::className($mapperClass) . ' must be type of ' . self::className($objectClass)
+            );
+        }
 
         $map = (new Mapper())->map($object, $mapperClass::MAP);
 
-        if ($map === null)
+        if ($map === null) {
             throw new FormatException(self::className($mapperClass) . ' invalid format');
+        }
 
         return $object;
     }
@@ -90,11 +94,12 @@ abstract class CMSBase implements CMSInterface
 	 */
 	final public function getBase64($splitToChunks = true): string
     {
-		if($splitToChunks)
-			return chunk_split(base64_encode($this->getBinary()));
-		else
-			return base64_encode($this->getBinary());
-	}
+		if ($splitToChunks) {
+            return chunk_split(base64_encode($this->getBinary()));
+        }
+
+        return base64_encode($this->getBinary());
+    }
 
 	/**
 	 * @param bool $splitToChunks
@@ -103,9 +108,10 @@ abstract class CMSBase implements CMSInterface
 	 */
 	final public function getBase64Content($splitToChunks = true): string
     {
-		if($splitToChunks)
-			return chunk_split(base64_encode($this->getBinaryContent()));
-		else
-			return base64_encode($this->getBinaryContent());
-	}
+		if ($splitToChunks) {
+            return chunk_split(base64_encode($this->getBinaryContent()));
+        }
+
+        return base64_encode($this->getBinaryContent());
+    }
 }

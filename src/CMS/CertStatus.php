@@ -44,7 +44,7 @@ class CertStatus extends CMSBase
      */
     public function isGood(): bool
     {
-        return $this->object->getIdentifier()->getTagNumber() == 0;
+        return $this->object->getIdentifier()->getTagNumber() === 0;
     }
 
     /**
@@ -52,7 +52,7 @@ class CertStatus extends CMSBase
      */
     public function isRevoked(): bool
     {
-        return $this->object->getIdentifier()->getTagNumber() == 1;
+        return $this->object->getIdentifier()->getTagNumber() === 1;
     }
 
     /**
@@ -60,6 +60,6 @@ class CertStatus extends CMSBase
      */
     public function isUnknown(): bool
     {
-        return $this->object->getIdentifier()->getTagNumber() == 2;
+        return $this->object->getIdentifier()->getTagNumber() === 2;
     }
 }

@@ -60,7 +60,7 @@ class EncapsulatedContentInfo extends CMSBase
 
         $children = $this->object->getChildren();
 
-        if (count($children) == 2) {
+        if (count($children) === 2) {
             $binary = $children[1]->getChildren()[0]->getBinary();
 
             $return = OctetString::fromBinary($binary);

@@ -30,12 +30,6 @@ class Certificate extends CMSBase implements CertificateInterface
     const OID_EXTENSION_CERT_POLICIES = '2.5.29.32';
     const OID_EXTENSION_KEY_USAGE = '2.5.29.15';
     const OID_EXTENSION_EXTENDED_KEY_USAGE = '2.5.29.37';
-
-    /**
-     * @var Sequence
-     */
-    protected $object;
-
     /**
      * Конструктор из бинарных данных
      *

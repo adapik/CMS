@@ -26,11 +26,6 @@ use FG\ASN1\ImplicitlyTaggedObject;
 class CertStatus extends CMSBase
 {
     /**
-     * @var ImplicitlyTaggedObject|ExplicitlyTaggedObject
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return CertStatus
      * @throws FormatException

@@ -25,11 +25,6 @@ use FG\ASN1\Universal\Sequence;
 class Accuracy extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      *
      * @return Accuracy
@@ -39,20 +34,6 @@ class Accuracy extends CMSBase
     {
         return new self(self::makeFromContent($content, Maps\Accuracy::class, Sequence::class));
     }
-
-    /**
-     * TODO: implement
-     */
-    //public function getMicros() {
-
-    //}
-
-    /**
-     * TODO: implement
-     */
-    //public function getMillis() {
-
-    //}
 
     /**
      * @return \FG\ASN1\Universal\Integer|ASN1ObjectInterface

@@ -28,11 +28,6 @@ use FG\ASN1\Universal\Sequence;
 class SingleResponse extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return SingleResponse
      * @throws FormatException

@@ -36,11 +36,6 @@ class SignerInfo extends CMSBase implements SignerInfoInterface
     const TYPE_X_LONG_TYPE1 = 'CAdES-X Long Type 1';
 
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return SignerInfo
      * @throws FormatException

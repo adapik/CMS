@@ -31,11 +31,6 @@ use FG\ASN1\Universal\Set;
 class SignedDataContent extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      *
      * @return SignedDataContent

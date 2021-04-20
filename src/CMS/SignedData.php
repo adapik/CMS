@@ -21,11 +21,6 @@ class SignedData extends CMSBase
     const OID_DATA = '1.2.840.113549.1.7.1';
 
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return SignedData
      * @throws FormatException

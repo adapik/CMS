@@ -27,11 +27,6 @@ use FG\ASN1\Universal\Sequence;
 class ResponseData extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return ResponseData
      * @throws FormatException

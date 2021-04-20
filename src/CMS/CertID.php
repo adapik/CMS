@@ -27,11 +27,6 @@ use FG\ASN1\Universal\Sequence;
 class CertID extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return CertID
      * @throws FormatException

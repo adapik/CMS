@@ -23,11 +23,6 @@ use FG\ASN1\Universal\Sequence;
 class TBSCertList extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return TBSCertList
      * @throws FormatException

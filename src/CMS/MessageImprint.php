@@ -22,11 +22,6 @@ use FG\ASN1\Universal\Sequence;
  */
 class MessageImprint extends CMSBase
 {
-    /**
-     * @var Sequence
-     */
-    protected $object;
-
     public static function createFromContent(string $content): CMSInterface
     {
         return new self(self::makeFromContent($content, Maps\MessageImprint::class, Sequence::class));

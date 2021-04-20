@@ -25,11 +25,6 @@ use FG\ASN1\Universal\Sequence;
 class IssuerAndSerialNumber extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return IssuerAndSerialNumber
      * @throws FormatException

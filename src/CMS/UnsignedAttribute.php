@@ -13,11 +13,6 @@ use FG\ASN1\Universal\Set;
 class UnsignedAttribute extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @return string
      */
     final public static function getOid(): string

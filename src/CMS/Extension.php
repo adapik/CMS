@@ -27,11 +27,6 @@ use FG\ASN1\Universal\Sequence;
 class Extension extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return Extension
      * @throws Exception\FormatException

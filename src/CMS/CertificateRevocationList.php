@@ -17,11 +17,6 @@ use FG\ASN1\Universal\Sequence;
 class CertificateRevocationList extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return CertificateRevocationList
      * @throws FormatException

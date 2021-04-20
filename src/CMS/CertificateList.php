@@ -26,11 +26,6 @@ use FG\ASN1\Universal\Sequence;
 class CertificateList extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return CertificateList
      * @throws FormatException

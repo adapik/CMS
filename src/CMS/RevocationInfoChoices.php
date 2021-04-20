@@ -26,11 +26,6 @@ use FG\ASN1\Universal\Sequence;
 class RevocationInfoChoices extends CMSBase
 {
     /**
-     * @var ExplicitlyTaggedObject
-     */
-    protected $object;
-
-    /**
      * @param string $content
      * @return RevocationInfoChoices
      * @throws Exception\FormatException

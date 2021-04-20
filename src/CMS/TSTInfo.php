@@ -30,11 +30,6 @@ use FG\ASN1\Universal\Sequence;
 class TSTInfo extends CMSBase
 {
     /**
-     * @var Sequence
-     */
-    protected $object;
-
-    /**
      * @param string $content
      *
      * @return TSTInfo
@@ -60,23 +55,6 @@ class TSTInfo extends CMSBase
 
         return $return;
     }
-
-    /**
-     * TODO: implement
-     *
-     * @return ExplicitlyTaggedObject|null
-     * @throws Exception
-     */
-    /*	public function getExtensions() {
-            $explicits = $this->object->findChildrenByType(ExplicitlyTaggedObject::class);
-            foreach($explicits as $explicit) {
-                if($explicit->getIdentifier()->getTagNumber() == 1) {
-                    return $explicit;
-                }
-            }
-
-            return null;
-        }*/
 
     /**
      * @return GeneralizedTime|ASN1ObjectInterface

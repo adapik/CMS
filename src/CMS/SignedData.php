@@ -4,6 +4,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Adapik\CMS\Interfaces\CMSInterface;
+use Adapik\CMS\Interfaces\PEMConvertable;
 use Exception;
 use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\NullObject;
@@ -16,9 +17,11 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\SignedData
  * @package Adapik\CMS
  */
-class SignedData extends CMSBase
+class SignedData extends CMSBase implements PEMConvertable
 {
     const OID_DATA = '1.2.840.113549.1.7.1';
+    const PEM_HEADER = "BEGIN CMS";
+    const PEM_FOOTER = "END CMS";
 
     /**
      * @param string $content
@@ -107,5 +110,21 @@ class SignedData extends CMSBase
             }
         }
         return $data;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPEMHeader(): string
+    {
+        return self::PEM_HEADER;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPEMFooter(): string
+    {
+        return self::PEM_FOOTER;
     }
 }

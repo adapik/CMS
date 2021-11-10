@@ -11,6 +11,7 @@
 namespace Adapik\CMS;
 
 use Adapik\CMS\Interfaces\CMSInterface;
+use Adapik\CMS\Interfaces\PEMConvertable;
 use FG\ASN1\ASN1ObjectInterface;
 use FG\ASN1\Universal\BitString;
 use FG\ASN1\Universal\Sequence;
@@ -21,8 +22,11 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\PublicKey
  * @package Adapik\CMS
  */
-class PublicKey extends CMSBase
+class PublicKey extends CMSBase implements PEMConvertable
 {
+    const PEM_HEADER = "BEGIN PUBLIC KEY";
+    const PEM_FOOTER = "END PUBLIC KEY";
+
     /**
      * @param string $content
      *
@@ -51,5 +55,21 @@ class PublicKey extends CMSBase
     public function getKeyAlgorithm(): AlgorithmIdentifier
     {
         return new AlgorithmIdentifier($this->object->getChildren()[0]);
+    }
+
+    /**
+     * @return string
+     */
+    public function getPEMHeader(): string
+    {
+        return self::PEM_HEADER;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPEMFooter(): string
+    {
+        return self::PEM_FOOTER;
     }
 }

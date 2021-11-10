@@ -5,6 +5,7 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use Adapik\CMS\Interfaces\CertificateInterface;
 use Adapik\CMS\Interfaces\CMSInterface;
+use Adapik\CMS\Interfaces\PEMConvertable;
 use Exception;
 use FG\ASN1;
 use FG\ASN1\ASN1Object;
@@ -20,7 +21,7 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\Certificate
  * @package Adapik\CMS
  */
-class Certificate extends CMSBase implements CertificateInterface
+class Certificate extends CMSBase implements CertificateInterface, PEMConvertable
 {
     const OID_EXTENSION_SUBJECT_KEY_ID = '2.5.29.14';
     const OID_EXTENSION_BASIC_CONSTRAINTS = '2.5.29.19';
@@ -30,6 +31,9 @@ class Certificate extends CMSBase implements CertificateInterface
     const OID_EXTENSION_CERT_POLICIES = '2.5.29.32';
     const OID_EXTENSION_KEY_USAGE = '2.5.29.15';
     const OID_EXTENSION_EXTENDED_KEY_USAGE = '2.5.29.37';
+    const PEM_HEADER = "BEGIN CERTIFICATE";
+    const PEM_FOOTER = "END CERTIFICATE";
+
     /**
      * Конструктор из бинарных данных
      *
@@ -78,6 +82,7 @@ class Certificate extends CMSBase implements CertificateInterface
      *
      * @return ASN1\ASN1ObjectInterface|null
      * @throws ASN1\Exception\ParserException
+     * @throws Exception
      */
     protected function getExtension(string $oidString): ?Extension
     {
@@ -105,6 +110,7 @@ class Certificate extends CMSBase implements CertificateInterface
     /**
      * @return string|null
      * @throws ASN1\Exception\ParserException
+     * @throws Exception
      */
     public function getAuthorityKeyIdentifier(): ?string
     {
@@ -129,6 +135,7 @@ class Certificate extends CMSBase implements CertificateInterface
      *
      * @return ASN1\ASN1ObjectInterface|null
      * @throws ASN1\Exception\ParserException
+     * @throws Exception
      */
     protected function _getExtension(string $oidString): ?ASN1Object
     {
@@ -150,6 +157,7 @@ class Certificate extends CMSBase implements CertificateInterface
     protected function _getExtensions(): ExplicitlyTaggedObject
     {
         $exTaggedObjects = $this->_getTBSCertificate()->findChildrenByType(ExplicitlyTaggedObject::class);
+        /** @var ExplicitlyTaggedObject[] $extensions */
         $extensions = array_filter($exTaggedObjects, function (ASN1\ASN1Object $value) {
             return $value->getIdentifier()->getTagNumber() === 3;
         });
@@ -309,5 +317,21 @@ class Certificate extends CMSBase implements CertificateInterface
     public function getPublicKey(): PublicKey
     {
         return $this->getTBSCertificate()->getPublicKey();
+    }
+
+    /**
+     * @return string
+     */
+    public function getPEMHeader(): string
+    {
+        return self::PEM_HEADER;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPEMFooter(): string
+    {
+        return self::PEM_FOOTER;
     }
 }

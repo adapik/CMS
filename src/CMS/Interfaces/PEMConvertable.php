@@ -1,6 +1,6 @@
 <?php
 /**
- * PemInterface
+ * PEMConvertable
  *
  * @author    Nurlan Mukhanov <nurike@gmail.com>
  * @copyright 2021 Nurlan Mukhanov
@@ -12,11 +12,15 @@ declare(strict_types=1);
 
 namespace Adapik\CMS\Interfaces;
 
-interface PEMInterface
+interface PEMConvertable
 {
     /**
-     * Get in PEM format with header and footer, spliced with 64 symbols chunks
      * @return string
      */
-    public function getPEM(): string;
+    public function getPEMHeader(): string;
+
+    /**
+     * @return string
+     */
+    public function getPEMFooter(): string;
 }

@@ -3,10 +3,10 @@
 namespace Adapik\Test\CMS;
 
 use Adapik\CMS\Certificate;
-use Adapik\CMS\PublicKey;
+use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\PEMConverter;
 use Adapik\CMS\SignedData;
 use Adapik\CMS\SignerInfo;
-use Adapik\CMS\Exception\FormatException;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -16,6 +16,11 @@ class SignedDataTest extends TestCase
     {
         $signedData = SignedData::createFromContent($this->getAttached());
         self::assertInstanceOf(SignedData::class, $signedData);
+    }
+
+    private function getAttached()
+    {
+        return file_get_contents(__DIR__ . '/../fixtures/cms_attached_chain.sig');
     }
 
     public function testCreateMalformed()
@@ -35,7 +40,7 @@ class SignedDataTest extends TestCase
     public function testExtractCertificates()
     {
         $signedData = SignedData::createFromContent($this->getAttached());
-        $certs      = $signedData->extractCertificates();
+        $certs = $signedData->extractCertificates();
         self::assertCount(2, $certs);
         self::assertContainsOnlyInstancesOf(Certificate::class, $certs);
     }
@@ -47,6 +52,11 @@ class SignedDataTest extends TestCase
 
         $signedData = SignedData::createFromContent($this->getDetached());
         self::assertFalse($signedData->hasData());
+    }
+
+    private function getDetached()
+    {
+        return file_get_contents(__DIR__ . '/../fixtures/cms_detached_cert.sig');
     }
 
     public function testGetData()
@@ -64,27 +74,18 @@ class SignedDataTest extends TestCase
         self::assertSame(base64_decode($this->getDetached()), $signedData->getBinary());
     }
 
-    private function getAttached()
-    {
-        return file_get_contents(__DIR__ . '/../fixtures/cms_attached_chain.sig');
-    }
-
-    private function getDetached()
-    {
-        return file_get_contents(__DIR__ . '/../fixtures/cms_detached_cert.sig');
-    }
-
     /**
      * @throws FormatException
      * @throws Exception
      */
-    public function testGetPEM() {
+    public function testGetPEM()
+    {
         $signedData = SignedData::createFromContent($this->getAttached());
 
-        $pem = $signedData->getPEM();
+        $pem = PEMConverter::toPEM($signedData);
         preg_match('/-+([^-]+)-+(.*?)-+([^-]+)-+/ms', $pem, $matches);
-        self::assertSame(SignedData::PEM_HEADER, $matches[1]);
-        self::assertSame(SignedData::PEM_FOOTER, $matches[3]);
+        self::assertSame($signedData->getPEMHeader(), $matches[1]);
+        self::assertSame($signedData->getPEMFooter(), $matches[3]);
         self::assertSame($signedData->getBase64(false), str_replace(["\r", "\n", "\r\n"], "", $matches[2]));
     }
 }

@@ -5,6 +5,7 @@ namespace Adapik\CMS;
 use Adapik\CMS\Exception\FormatException;
 use Adapik\CMS\Interfaces\CertificateInterface;
 use Adapik\CMS\Interfaces\CMSInterface;
+use Adapik\CMS\Interfaces\PEMConvertable;
 use Exception;
 use FG\ASN1;
 use FG\ASN1\ASN1Object;
@@ -20,7 +21,7 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\Certificate
  * @package Adapik\CMS
  */
-class Certificate extends PEMBase implements CertificateInterface
+class Certificate extends CMSBase implements CertificateInterface, PEMConvertable
 {
     const OID_EXTENSION_SUBJECT_KEY_ID = '2.5.29.14';
     const OID_EXTENSION_BASIC_CONSTRAINTS = '2.5.29.19';
@@ -316,5 +317,21 @@ class Certificate extends PEMBase implements CertificateInterface
     public function getPublicKey(): PublicKey
     {
         return $this->getTBSCertificate()->getPublicKey();
+    }
+
+    /**
+     * @return string
+     */
+    public function getPEMHeader(): string
+    {
+        return self::PEM_HEADER;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPEMFooter(): string
+    {
+        return self::PEM_FOOTER;
     }
 }

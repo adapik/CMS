@@ -15,6 +15,7 @@ namespace Adapik\Test\CMS;
 use Adapik\CMS\AlgorithmIdentifier;
 use Adapik\CMS\Certificate;
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\PEMConverter;
 use Adapik\CMS\PublicKey;
 use Exception;
 use FG\ASN1\Universal\BitString;
@@ -44,10 +45,10 @@ class PublicKeyTest extends TestCase
         $certificate = Certificate::createFromContent(base64_decode(file_get_contents(__DIR__ . '/../fixtures/cert_user.crt')));
         $publicKey = $certificate->getPublicKey();
 
-        $pem = $publicKey->getPEM();
+        $pem = PEMConverter::toPEM($publicKey);
         preg_match('/-+([^-]+)-+(.*?)-+([^-]+)-+/ms', $pem, $matches);
-        self::assertSame(PublicKey::PEM_HEADER, $matches[1]);
-        self::assertSame(PublicKey::PEM_FOOTER, $matches[3]);
+        self::assertSame($publicKey->getPEMHeader(), $matches[1]);
+        self::assertSame($publicKey->getPEMFooter(), $matches[3]);
         self::assertSame($publicKey->getBase64(false), str_replace(["\r", "\n", "\r\n"], "", $matches[2]));
     }
 }

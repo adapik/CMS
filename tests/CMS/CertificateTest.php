@@ -4,6 +4,7 @@ namespace Adapik\Test\CMS;
 
 use Adapik\CMS\Certificate;
 use Adapik\CMS\Exception\FormatException;
+use Adapik\CMS\PEMConverter;
 use Adapik\CMS\PublicKey;
 use FG\ASN1\Universal\BitString;
 use PHPUnit\Framework\TestCase;
@@ -168,10 +169,10 @@ class CertificateTest extends TestCase
      */
     public function testGetPEM() {
         $certificate = Certificate::createFromContent($this->userCert);
-        $pem = $certificate->getPEM();
+        $pem = PEMConverter::toPEM($certificate);
         preg_match('/-+([^-]+)-+(.*?)-+([^-]+)-+/ms', $pem, $matches);
-        self::assertSame(Certificate::PEM_HEADER, $matches[1]);
-        self::assertSame(Certificate::PEM_FOOTER, $matches[3]);
+        self::assertSame($certificate->getPEMHeader(), $matches[1]);
+        self::assertSame($certificate->getPEMFooter(), $matches[3]);
         self::assertSame($certificate->getBase64(false), str_replace(["\r", "\n", "\r\n"], "", $matches[2]));
     }
 }

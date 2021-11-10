@@ -21,8 +21,11 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\PublicKey
  * @package Adapik\CMS
  */
-class PublicKey extends CMSBase
+class PublicKey extends PEMBase
 {
+    const PEM_HEADER = "BEGIN PUBLIC KEY";
+    const PEM_FOOTER = "END PUBLIC KEY";
+
     /**
      * @param string $content
      *

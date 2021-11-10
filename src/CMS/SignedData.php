@@ -16,9 +16,11 @@ use FG\ASN1\Universal\Sequence;
  * @see     Maps\SignedData
  * @package Adapik\CMS
  */
-class SignedData extends CMSBase
+class SignedData extends PEMBase
 {
     const OID_DATA = '1.2.840.113549.1.7.1';
+    const PEM_HEADER = "BEGIN CMS";
+    const PEM_FOOTER = "END CMS";
 
     /**
      * @param string $content

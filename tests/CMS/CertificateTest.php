@@ -162,4 +162,16 @@ class CertificateTest extends TestCase
 
         self::assertCount(9,$extensions);
     }
+
+    /**
+     * @throws FormatException
+     */
+    public function testGetPEM() {
+        $certificate = Certificate::createFromContent($this->userCert);
+        $pem = $certificate->getPEM();
+        preg_match('/-+([^-]+)-+(.*?)-+([^-]+)-+/ms', $pem, $matches);
+        self::assertSame(Certificate::PEM_HEADER, $matches[1]);
+        self::assertSame(Certificate::PEM_FOOTER, $matches[3]);
+        self::assertSame($certificate->getBase64(false), str_replace(["\r", "\n", "\r\n"], "", $matches[2]));
+    }
 }

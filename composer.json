@@ -19,7 +19,7 @@
     "adapik/phpasn1": "^2.2"
   },
   "require-dev": {
-    "phpunit/phpunit": "^8.5",
+    "phpunit/phpunit": "^9.5",
     "satooshi/php-coveralls": "^1.0"
   },
   "autoload": {

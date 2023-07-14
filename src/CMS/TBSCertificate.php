@@ -104,4 +104,9 @@ class TBSCertificate extends CMSBase
 
         return $return;
     }
+
+    public function getHexSerialNumber(): string
+    {
+        return '0x' . bin2hex($this->object->findChildrenByType(Integer::class)[0]->getContent()->getBinary());
+    }
 }

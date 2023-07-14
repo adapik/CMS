@@ -175,4 +175,12 @@ class CertificateTest extends TestCase
         self::assertSame($certificate->getPEMFooter(), $matches[3]);
         self::assertSame($certificate->getBase64(false), str_replace(["\r", "\n", "\r\n"], "", $matches[2]));
     }
+
+    public function testGetHexSerialNumber()
+    {
+        $certificate = Certificate::createFromContent($this->userCert);
+
+        self::assertEquals('0x00900cdaa1d26dfa3f7f9e83886b374863', $certificate->getTBSCertificate()->getHexSerialNumber());
+        self::assertEquals(floatval(self::CERT_SERIAL), hexdec($certificate->getTBSCertificate()->getHexSerialNumber()));
+    }
 }

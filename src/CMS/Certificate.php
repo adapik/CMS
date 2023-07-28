@@ -47,10 +47,10 @@ class Certificate extends CMSBase implements CertificateInterface, PEMConvertabl
     }
 
     /**
-     * @return string
+     * @return Serial
      * @throws Exception
      */
-    public function getSerial(): string
+    public function getSerial(): Serial
     {
         return $this->getTBSCertificate()->getSerialNumber();
     }

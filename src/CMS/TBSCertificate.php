@@ -39,9 +39,11 @@ class TBSCertificate extends CMSBase
      * @return string
      * @throws Exception
      */
-    public function getSerialNumber(): string
+    public function getSerialNumber()
     {
-        return (string)$this->object->findChildrenByType(Integer::class)[0];
+        $value = $this->object->findChildrenByType(Integer::class)[0]->getBinaryContent();
+
+        return new Serial($value);
     }
 
     /**

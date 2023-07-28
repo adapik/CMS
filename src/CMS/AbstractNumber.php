@@ -16,7 +16,7 @@ abstract class AbstractNumber
 
     public function toBinary(): string
     {
-        return $this->value;
+        return gmp_strval(gmp_init($this->toHex(), 16), 2);
     }
 
     public function toInt(): string

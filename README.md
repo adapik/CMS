@@ -18,9 +18,9 @@ composer require adapik/cms
 
 This package allow to convert common cryptographic structures from binary ASN.1 format to PHP Objects.
 
-- CMS (according to [RFC3852](https://datatracker.ietf.org/doc/html/rfc3852)
-- CAdES (according to [RFC3852](https://datatracker.ietf.org/doc/html/rfc5126)
-- x.509 Certificates (according to [RFC3852](https://datatracker.ietf.org/doc/html/rfc5126)
+- CMS (according to [RFC3852](https://datatracker.ietf.org/doc/html/rfc3852))
+- CAdES (according to [RFC3852](https://datatracker.ietf.org/doc/html/rfc5126))
+- x.509 Certificates (according to [RFC3852](https://datatracker.ietf.org/doc/html/rfc5126))
 - etc.
 
 This is a pure PHP library and does not require any cryptographic extensions (like ext-openssl) to be installed.

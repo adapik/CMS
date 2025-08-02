@@ -2,7 +2,7 @@
 A PHP Library that allows you to decode ASN.1 CMS using Basic Encoding Rules (BER)
 
 ![build status](https://github.com/adapik/CMS/actions/workflows/tests.yaml/badge.svg?branch=master)
-[[![codecov](https://codecov.io/github/adapik/cms/graph/badge.svg?token=KCBH7EV2J0)](https://codecov.io/github/adapik/cms)
+[![codecov](https://codecov.io/gh/adapik/CMS/graph/badge.svg?token=OTXHYSWR5G)](https://codecov.io/gh/adapik/CMS)
 
 [![Latest Stable Version](https://poser.pugx.org/Adapik/cms/v/stable.png)](https://packagist.org/packages/Adapik/cms)
 [![Total Downloads](https://poser.pugx.org/Adapik/cms/downloads.png)](https://packagist.org/packages/Adapik/cms)

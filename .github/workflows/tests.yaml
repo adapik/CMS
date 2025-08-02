@@ -60,5 +60,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./build/logs/clover.xml
           flags: unittests
+          slug: adapik/CMS
           name: codecov-umbrella
           fail_ci_if_error: false

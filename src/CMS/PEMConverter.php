@@ -24,7 +24,7 @@ class PEMConverter
      */
     public static function toPEM(PEMConvertable $object): string
     {
-        $pem = chunk_split(base64_encode($object->getBinary()), 64);
+        $pem = rtrim(chunk_split(base64_encode($object->getBinary()), 64));
 
         return sprintf("-----%s-----\r\n%s\r\n-----%s-----\r\n", $object->getPEMHeader(), $pem, $object->getPEMFooter());
     }

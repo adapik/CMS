@@ -15,6 +15,7 @@ namespace CMS;
 use Adapik\CMS\AlgorithmIdentifier;
 use Adapik\CMS\Exception\FormatException;
 use Adapik\CMS\SignedData;
+use FG\ASN1\ASN1Object;
 use PHPUnit\Framework\TestCase;
 
 class AlgorithmIdentifierTest extends TestCase
@@ -38,6 +39,23 @@ class AlgorithmIdentifierTest extends TestCase
             $newSA = AlgorithmIdentifier::createFromContent($binary);
 
             self::assertEquals($binary, $newSA->getBinary());
+        }
+    }
+
+    /**
+     * @throws FormatException
+     */
+    public function testGetParameters()
+    {
+        $binary = base64_decode(file_get_contents(__DIR__ . '/../fixtures/pull_request.cms'));
+        $signedData = SignedData::createFromContent($binary);
+
+        foreach ($signedData->getSignedDataContent()->getCertificateSet() as $certificate) {
+            $signatureAlgorithm = $certificate->getSignatureAlgorithm();
+
+            $parameters = $signatureAlgorithm->getParameters();
+
+            self::assertInstanceOf(ASN1Object::class, $parameters);
         }
     }
 }

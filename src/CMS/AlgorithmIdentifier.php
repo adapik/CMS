@@ -12,6 +12,7 @@ namespace Adapik\CMS;
 
 use Adapik\CMS\Exception\FormatException;
 use Adapik\CMS\Interfaces\CMSInterface;
+use FG\ASN1\ASN1Object;
 use FG\ASN1\Universal\Sequence;
 
 /**
@@ -38,5 +39,14 @@ class AlgorithmIdentifier extends CMSBase
     public function getAlgorithmOid(): string
     {
         return $this->object->getChildren()[0]->__toString();
+    }
+
+    /**
+     * @return ASN1Object|null
+     */
+    public function getParameters(): ?ASN1Object
+    {
+        $children = $this->object->getChildren();
+        return $children[1] ?? null;
     }
 }

@@ -14,6 +14,7 @@ use Adapik\CMS\Exception\FormatException;
 use Adapik\CMS\Interfaces\CMSInterface;
 use FG\ASN1\ASN1Object;
 use FG\ASN1\ASN1ObjectInterface;
+use FG\ASN1\Exception\ParserException;
 use FG\ASN1\Mapper\Mapper;
 
 /**
@@ -45,7 +46,11 @@ abstract class CMSBase implements CMSInterface
      */
     final protected static function makeFromContent(string $content, string $mapperClass, string $objectClass): ASN1ObjectInterface
     {
-        $object = ASN1Object::fromFile($content);
+        try {
+            $object = ASN1Object::fromFile($content);
+        } catch (ParserException $e) {
+            throw new FormatException($e->getMessage(), 0, $e);
+        }
 
         if (!$object instanceof $objectClass) {
             throw new FormatException(

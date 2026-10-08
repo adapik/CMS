@@ -61,4 +61,13 @@ class PrivateKeyTest extends TestCase
         // RSA encryption OID is 1.2.840.113549.1.1.1
         self::assertStringContainsString('1.2.840.113549.1.1.1', $algorithm->getAlgorithmOid());
     }
+
+    public function testNonOctetStringPrivateKeyIsRejected()
+    {
+        $this->expectException(FormatException::class);
+
+        PrivateKey::createFromContent(hex2bin(
+            '3034020100300b0609608648016503040320442280203434343434343434343434343434343434343434343434343434343434343434'
+        ));
+    }
 }
